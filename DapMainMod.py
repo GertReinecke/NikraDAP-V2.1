@@ -199,10 +199,10 @@ class DapMainC:
             1: self.Translational_Acc,
             2: self.Revolute_Revolute_Acc,
             3: self.Translational_Revolute_Acc,
-            4: self.Driven_Revolute_Acc,
-            5: self.Driven_Translational_Acc,
-            6: self.Rigid_Acc,
-            7: self.Disc_Acc
+            # 4: self.Driven_Revolute_Acc,
+            # 5: self.Driven_Translational_Acc,
+            4: self.Rigid_Acc,
+            5: self.Disc_Acc
         }
         # Dictionary of the pointers for Dynamic calling of the constraint functions
         self.dictconstraintFunctions = {
@@ -210,10 +210,10 @@ class DapMainC:
             1: self.Translational_constraint,
             2: self.Revolute_Revolute_constraint,
             3: self.Translational_Revolute_constraint,
-            4: self.Driven_Revolute_constraint,
-            5: self.Driven_Translational_constraint,
-            6: self.Rigid_constraint,
-            7: self.Disc_constraint,
+            #4: self.Driven_Revolute_constraint,
+            #5: self.Driven_Translational_constraint,
+            4: self.Rigid_constraint,
+            5: self.Disc_constraint,
         }
         # Dictionary of the pointers for Dynamic calling of the Jacobian functions
         self.dictJacobianFunctions = {
@@ -221,10 +221,10 @@ class DapMainC:
             1: self.Translational_Jacobian,
             2: self.Revolute_Revolute_Jacobian,
             3: self.Translational_Revolute_Jacobian,
-            4: self.Driven_Revolute_Jacobian,
-            5: self.Driven_Translational_Jacobian,
-            6: self.Rigid_Jacobian,
-            7: self.Disc_Jacobian,
+            #4: self.Driven_Revolute_Jacobian,
+            #5: self.Driven_Translational_Jacobian,
+            4: self.Rigid_Jacobian,
+            5: self.Disc_Jacobian,
         }
 
         # Convert joint object Dictionary to Joint Object List to ensure being ordered
@@ -593,16 +593,16 @@ class DapMainC:
                 # ==================================
                 jointObj.mConstraints = 1
                 jointObj.nMovBodies = 2
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
+            #elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
                 # ==================================
                 #        case {'rel-rot'}                                       % revised August 2022
                 #            Joints(Ji).mrows = 1; Joints(Ji).nbody = 1;        % revised August 2022
                 # ==================================
-                jointObj.mConstraints = 1
-                jointObj.nMovBodies = 1
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
+                #jointObj.mConstraints = 1
+                #jointObj.nMovBodies = 1
+            #elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
                 # ==================================
@@ -612,8 +612,8 @@ class DapMainC:
                 #            Bi = Points(Pi).Bindex; Joints(Ji).iBindex = Bi;   % revised August 2022
                 #            Bj = Points(Pj).Bindex; Joints(Ji).jBindex = Bj;   % revised August 2022
                 # ==================================
-                jointObj.mConstraints = 1
-                jointObj.nMovBodies = 1
+                #jointObj.mConstraints = 1
+                #jointObj.nMovBodies = 1
             elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
