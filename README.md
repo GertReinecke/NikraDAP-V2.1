@@ -4,7 +4,7 @@
 The FreeCAD NikraDAP WorkBench is a planar multibody dynamics workbench that is based on the DAP solver algorithm developed by P.E.&nbsp;Nikravesh (**PLANAR MULTIBODY DYNAMICS: Formulation, Programming with MATLAB, and Applications**, 2nd Edition, *P.E.&nbsp;Nikravesh*, CRC&nbsp;Press, 2018)<br>
 ![Example of DAP](./Documentation/Images/MultiPendulum.gif)<br><br>
 ## Sister Web Site
-FreeCAD-NikraDAP has a sister website: https://github.com/NikraDAP/NikraDAP-Videos<br>
+FreeCAD-NikraDAP has a brother website: https://github.com/NikraDAP/NikraDAP-Videos<br>
 on which you can find, and from which you can download, various tutorial videos<br><br>
 ## Installation
 ### The easy way - using the Addon Manager
