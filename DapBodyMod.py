@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -110,13 +110,16 @@ class CommandDapBodyClass:
         # Switch on the Dap Body Task Dialog
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("CommandDapBody-__getstate__")
+            DT.Mess("CommandDapBody-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("CommandDapBodyClass-__setstate__")
+            DT.Mess("CommandDapBodyClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 class DapBodyClass:
     if Debug:
@@ -157,13 +160,16 @@ class DapBodyClass:
         DT.addObjectProperty(bodyObject, "pointLabels",      [],              "App::PropertyStringList", "Points",    "List of Point labels associated with this body")
         DT.addObjectProperty(bodyObject, "pointLocals",      [],              "App::PropertyVectorList", "Points",    "Vectors relative to local LCS")
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("DapBodyClass-__getstate__")
+            DT.Mess("DapBodyClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("DapBodyClass-__setstate__")
+            DT.Mess("DapBodyClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 class ViewProviderDapBodyClass:
     """A class which handles all the gui overheads"""
@@ -228,13 +234,16 @@ class ViewProviderDapBodyClass:
             DT.Mess("ViewProviderDapBodyClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("ViewProviderDapBodyClass-__getstate__")
+            DT.Mess("ViewProviderDapBodyClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapBodyClass-__setstate__")
+            DT.Mess("ViewProviderDapBodyClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 class TaskPanelDapBodyClass:
     """Task panel for adding and editing DAP Bodies"""
@@ -765,11 +774,14 @@ class TaskPanelDapBodyClass:
             DT.Mess("TaskPanelDapBodyClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapBodyClass-__getstate__")
+            DT.Mess("TaskPanelDapBodyClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapBodyClass-__setstate__")
+            DT.Mess("TaskPanelDapBodyClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================

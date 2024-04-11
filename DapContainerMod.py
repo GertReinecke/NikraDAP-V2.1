@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -120,13 +120,16 @@ class CommandDapContainerClass:
         if DT.setActiveContainer(makeDapContainer()) is False:
             CAD.Console.PrintError("Failed to create DAP container")
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__getstate__")
+            DT.Mess("TaskPanelDapContainerClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__setstate__")
+            DT.Mess("TaskPanelDapContainerClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class DapContainerClass:
     """The Dap analysis container class"""
@@ -157,13 +160,16 @@ class DapContainerClass:
 
         DT.setActiveContainer(containerObject)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("DapContainerClass-__getstate__")
+            DT.Mess("DapContainerClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("DapContainerClass-__setstate__")
+            DT.Mess("DapContainerClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class ViewProviderDapContainerClass:
     """A view provider for the DapContainer container object"""
@@ -191,11 +197,14 @@ class ViewProviderDapContainerClass:
     def updateData(self, obj, prop):
         return
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__getstate__")
+            DT.Mess("TaskPanelDapContainerClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__setstate__")
+            DT.Mess("TaskPanelDapContainerClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================

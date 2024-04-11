@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -124,13 +124,16 @@ class CommandDapJointClass:
         # Switch on the Dap Joint Task Dialog
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("CommandDapJointClass-__getstate__")
+            DT.Mess("CommandDapJointClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("CommandDapJointClass-__setstate__")
+            DT.Mess("CommandDapJointClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 class DapJointClass:
     if Debug:
@@ -206,13 +209,16 @@ class DapJointClass:
         DT.addObjectProperty(jointObject, "rowStart", -1, "App::PropertyInteger", "Bodies & constraints", "Row starting index")
         DT.addObjectProperty(jointObject, "rowEnd", -1, "App::PropertyInteger", "Bodies & constraints", "Row ending index")
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("DapJointClass-__getstate__")
+            DT.Mess("DapJointClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("DapJointClass-__setstate__")
+            DT.Mess("DapJointClass-__dump__")
+        if state:
+            self.Type = state
 #  =============================================================================
 class ViewProviderDapJointClass:
     if Debug:
@@ -277,13 +283,16 @@ class ViewProviderDapJointClass:
             DT.Mess("ViewProviderDapJointClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("ViewProviderDapJointClass-__getstate__")
+            DT.Mess("ViewProviderDapJointClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapJoint-__setstate__")
+            DT.Mess("ViewProviderDapJoint-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 class TaskPanelDapJointClass:
     """Task panel for editing DAP Joints"""
@@ -1367,13 +1376,16 @@ class TaskPanelDapJointClass:
             DT.Mess("TaskPanelDapJointClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapJointClass-__getstate__")
+            DT.Mess("TaskPanelDapJointClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapJointClass-__setstate__")
+            DT.Mess("TaskPanelDapJointClass-__dump__")
+        if state:
+            self.Type = state
 # ==============================================================================
 '''elif formJointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
     self.jointTaskObject.point_I_j_Name = ""

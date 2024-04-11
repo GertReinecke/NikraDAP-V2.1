@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -235,7 +235,7 @@ def getPointsFromBodyName(bodyName, bodyObjDict):
 def condensePoints(pointNames, pointLabels, pointLocals):
     """Condense all the duplicate points into one"""
     if Debug:
-        DT.Mess("DapTools-condensePoints")
+        Mess("DapTools-condensePoints")
 
     # Condense all the duplicate points in this specific body into one
     numPoints = len(pointLocals)
@@ -251,10 +251,10 @@ def condensePoints(pointNames, pointLabels, pointLocals):
                         labelj = pointLabels[j][:pointLabels[j].index('{')]
                         if labeli == labelj:
                             if Debug:
-                                DT.MessNoLF("Combining: ")
-                                DT.MessNoLF(pointLabels[i])
-                                DT.MessNoLF(" and ")
-                                DT.Mess(pointLabels[j])
+                                MessNoLF("Combining: ")
+                                MessNoLF(pointLabels[i])
+                                MessNoLF(" and ")
+                                Mess(pointLabels[j])
                             pointNames[i] = pointNames[i] + "-" + pointNames[j][pointNames[j].index('{'):]
                             pointLabels[i] = pointLabels[i] + "-" + pointLabels[j][pointLabels[j].index('{'):]
                             # Shift the others up to remove the duplicate
@@ -281,14 +281,14 @@ def condensePoints(pointNames, pointLabels, pointLocals):
                 if abs(pointLocals[i].y - pointLocals[j].y) < 1.0e-10:
                     if abs(pointLocals[i].z - pointLocals[j].z) < 1.0e-10:
                         if Debug:
-                            DT.MessNoLF("Combining: ")
-                            DT.MessNoLF(pointLabels[i])
-                            DT.MessNoLF(" and ")
-                            DT.Mess(pointLabels[j])
+                            MessNoLF("Combining: ")
+                            MessNoLF(pointLabels[i])
+                            MessNoLF(" and ")
+                            Mess(pointLabels[j])
                         pointNames[i] = pointNames[i] + "-" + pointNames[j]
                         pointLabels[i] = pointLabels[i] + "-" + pointLabels[j]
                         if Debug:
-                            DT.Mess(pointLabels[i])
+                            Mess(pointLabels[i])
                         # Shift the others up to remove the duplicate
                         k = j + 1
                         while k < numPoints:
@@ -307,15 +307,15 @@ def condensePoints(pointNames, pointLabels, pointLocals):
     # If we are debugging, Print out all the body's and point's placements etc
     if Debug:
         for index in range(len(pointNames)):
-            DT.Mess("-------------------------------------------------------------------")
-            DT.Mess("Point Name: " + str(pointNames[index]))
-            DT.Mess("Point Label:  " + str(pointLabels[index]))
-            DT.Mess("")
-            DT.MessNoLF("Point Local Vector:")
-            DT.PrintVec(pointLocals[index])
-            DT.MessNoLF("Point World Vector:")
-            DT.PrintVec(CAD.Vector(BodyPlacementMatrix.multVec(pointLocals[index])))
-            DT.Mess("")
+            Mess("-------------------------------------------------------------------")
+            Mess("Point Name: " + str(pointNames[index]))
+            Mess("Point Label:  " + str(pointLabels[index]))
+            Mess("")
+            MessNoLF("Point Local Vector:")
+            PrintVec(pointLocals[index])
+            MessNoLF("Point World Vector:")
+            PrintVec(CAD.Vector(BodyPlacementMatrix.multVec(pointLocals[index])))
+            Mess("")
 #  -------------------------------------------------------------------------
 def parsePoint(pointString):
     """Split all the LCS points for this component into a tip string"""
@@ -1365,7 +1365,7 @@ def OldDecorate():
 #  -------------------------------------------------------------------------
 def NormalizeNpVec(vecNp):
     if Debug:
-        DT.Mess("DapMainC - NormalizeNpVec")
+        Mess("DapMainC - NormalizeNpVec")
     mag = np.sqrt(vecNp[0]**2 + vecNp[1]**2)
     if mag > 1.0e-10:
         vecNp /= mag
@@ -1380,7 +1380,7 @@ def Rot90NumPy(a):
 #  -------------------------------------------------------------------------
 def CADVecToNumPyF(CADVec):
     if Debug:
-        DT.Mess("CADvecToNumPyF")
+        Mess("CADvecToNumPyF")
     a = np.zeros((2,))
     a[0] = CADVec.x
     a[1] = CADVec.y
@@ -1388,7 +1388,7 @@ def CADVecToNumPyF(CADVec):
 #  -------------------------------------------------------------------------
 def nicePhiPlease(vectorsRelativeCoG):
     if Debug:
-        DT.Mess("nicePhiPlease")
+        Mess("nicePhiPlease")
 
     # Start off with a big phi to check when a good one hasn't been found yet
     phi = 1e6

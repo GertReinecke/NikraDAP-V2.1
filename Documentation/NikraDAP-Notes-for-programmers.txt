@@ -1,0 +1,653 @@
+Documentation of NikraDAP for programmers as at 2024/04/11
+==========================================================
+
+SIMPLIFYING CONVENTIONS:
+=======================
+All python module file names end in 'Mod'
+
+All Class names end in 'Class'
+
+camelCaseIsUsedForNaming [mostly]
+
+Callback function names end with '_Callback'
+
+'FreeCAD' is shortened to 'CAD'
+'FreeCADGui' is shortened to 'CADGui'
+'DapToolsMod' [the Tools module] is shortened to 'DT'
+
+Numpy is used in calculation-intensive areas
+
+Numpy vector names end in 'Np'
+[Note than Numpy vectors and FreeCAD vectors are very different entities]
+
+Python pseudo 'CASE' programming structures are
+avoided due to unnecessary complexity
+
+When speed is required, functions are called using dictionaries of
+function pointers (see e.g. DapMainMod)
+
+Dictionaries of constants (e.g. Joint type) are defined globally
+at the beginning of DapToolsMod.py
+
+================================================================
+
+DIRECTORY AND FILES:
+===================
+Directories
+-----------
+Documentation/images
+icons
+NikraDAP-Demo-Models
+
+NikraDAP Python Source:
+----------------------
+FreeCAD entry point:
+	InitGui.py		[Defines NikraDAP workbench and structure]
+
+Modules Called with the respective NikraDAP icons:
+       DapContainerMod.py	[Parent container for DAP system]
+       DapBodyMod.py		[Definition of a body]
+       DapMaterialMod.py	[Definition of the density of the body components]
+       DapForceMod.py		[Definition of any forces]
+       DapJointMod.py		[Definition of the joints between bodies]
+       DapSolverMod.py		[Selection of parameters for the DAP solution]
+       DapMainMod.py		[Main DAP calculation module]
+       DapAnimationMod.py	[Animation of the solutiion]
+
+Utility modules:
+       DapFunctionMod.py	[Module containing mathematical function calculations]
+       DapToolsMod.py		[Miscellaneous tools used by the NikraDAP system]
+
+Graphical User interface files for the various Task Dialog boxes:
+----------------------------------------------------------------
+TaskPanelDapBodies.ui
+TaskPanelDapMaterials.ui
+TaskPanelDapForces.ui
+TaskPanelDapJoints.ui
+TaskPanelDapSolver.ui
+TaskPanelDapAnimate.ui
+
+GNU License files:
+-----------------
+GPL-3
+LGPL-3
+LICENSE
+
+Images used in README.md and elsewhere:
+--------------------------------------
+./Documentation/Images:
+ AnimateControl.png	AnimateIcon.png		Assembly43DBody.png
+ BodyGround.png		ChooseGround.png	Container.png
+ Decoration.png		DownloadZIP.png		ForceIcon.png
+ Gravity-Y.png		GreenCode.png		GroundHoleOptions.png
+ GroundHole.png		LCS.png			MaterialDialog.png
+ MaterialsIcon.png	MaterialsList.png	MovingBody.png
+ MultiPendulum.gif	NewBody.png		NewJoint.png
+ PartName.png		PendulumHole.png	READMEPendulum.gif
+ Rename.png		Rotation.png		RunAnalysis.png
+ Solver.png		Sponsors.png		WorkbenchSelect.png
+ NikraDAPConferenceVideoThumbnail.png
+ NikraDAPNewtonsCradle.gif
+
+Vairous sets of Icons:
+---------------------
+Icon1g.png	Icon2g.png	Icon3g.png	Icon4g.png	Icon5g.png
+Icon6g.png	Icon7g.png	Icon8g.png	Icon9g.png	
+
+Icon1n.png	Icon2n.png	Icon3n.png	Icon4n.png	Icon5n.png
+Icon6n.png	Icon7n.png	Icon8n.png	Icon9n.png
+
+Icon1.png	Icon2.png	Icon3.png	Icon4.png	Icon5.png
+Icon6.png	Icon7.png	Icon8.png	Icon9.png
+
+IconNikravesh.png		IconNikravesh.xcf		Wallpaper.png
+
+Documentation, Demonstration and Tutorial Models:
+------------------------------------------------
+README.md
+./NikraDAP-Demo-Models:
+Demo1Assembly.FCStd
+Demo2Bodies.FCStd
+Demo3Rev.FCStd
+Demo4Rev-Rev.FCStd
+Demo5Rev-Rev-Rev.FCStd
+Demo6RevRev.FCStd
+Demo7Rigid.FCStd
+Demo8Trans.FCStd
+Demo9Rev-Trans.FCStd
+NikraDAPBeginnersTutorial1.FCStd
+NikraDAPBeginnersTutorial2.FCStd
+NikraDAPBeginnersTutorial3.FCStd
+
+====================================================================
+Classes:
+=======
+NOTE:
+    Most modules contain only the following classes:
+        CommandDapXXXXXXXClass - handles the activating/hiding of the icon
+	DapXXXXXXXClass - defines and initialises the items in the respective FreeCAD object
+	ViewProviderDapXXXXXXXClass - handles the FreeCAD GUI stuff
+	TaskPanelDapXXXXXXXClass - handles the interaction between user and Task Dialog
+	
+InitGui.py		[Defines NikraDAP workbench and structure]
+    class DapWorkbench21C(Workbench):
+
+DapContainerMod.py	[Parent container for DAP system]
+    class CommandDapContainerClass:
+    class DapContainerClass:
+    class ViewProviderDapContainerClass:
+    
+DapBodyMod.py		[Definition of a body]
+    class CommandDapBodyClass:
+    class DapBodyClass:
+    class ViewProviderDapBodyClass:
+    class TaskPanelDapBodyClass:
+    
+DapMaterialMod.py	[Definition of the density of the body components]
+    class CommandDapMaterialClass:
+    class DapMaterialClass:
+    class ViewProviderDapMaterialClass:
+    class TaskPanelDapMaterialClass:
+    
+DapForceMod.py		[Definition of any forces]
+    class CommandDapForceClass:
+    class DapForceClass:
+    class ViewProviderDapForceClass:
+    class TaskPanelDapForceClass:
+    
+DapJointMod.py		[Definition of the joints between bodies]
+    class CommandDapJointClass:
+    class DapJointClass:
+    class ViewProviderDapJointClass:
+    class TaskPanelDapJointClass:
+
+DapSolverMod.py		[Selection of parameters for the DAP solution]
+    class CommandDapSolverClass:
+    class DapSolverClass:
+    class ViewProviderDapSolverClass:
+    class TaskPanelDapSolverClass:
+
+DapMainMod.py		[Main DAP calculation module]
+    class DapMainC:
+
+DapAnimationMod.py	[Animation of the solutiion]
+    class CommandDapAnimationClass:
+    class ViewProviderDapAnimateClass:
+    class TaskPanelDapAnimateClass:
+
+DapFunctionMod.py	[Module containing motion function calculations]
+    class FunctionC:
+
+DapToolsMod.py		[Miscellaneous tools used by the NikraDAP system]
+
+====================================================================
+Functions:
+=========
+NOTES:
+1.  The __load__ and __dump__ methods are necessary in the conversion between FreeCAD
+    objects and JSON formats for loading/storing.
+    
+2.  __load__ and __dump__ were previously __getState__ and setState__, but since
+    FreeCAD 0.21.2, the names conflict with names in the FreeCAD system.  
+
+3.  Each FreeCAD object has a function to generate it, which is located outside
+    of the class definitions. [def makeDapXXXXXXX(name="DapXXXXXXX")]
+
+4.  The respective classes (see above) typically all contain the following methods:
+
+4a.     CommandDapXXXXXXXClass:
+            def GetResources(self): - sets up the respective icons, menus and tooltips
+       	    def IsActive(self): - checks whether the icon is/should be activated
+    	    def Activated(self): - activates the icon
+
+4b.    DapXXXXXXXClass:
+            def __init__(self, XXXXXXXObject): - run on creation of the NikraDAP object
+    	    def onDocumentRestored(self, XXXXXXXObject): - calls addProperties on restoration
+    	    def addPropertiesToObject(self, XXXXXXXObject): - sets up defaults in object
+
+4c.    ViewProviderDapXXXXXXXClass:
+            def __init__(self, XXXXXXXViewObject): - run on instantiation
+            def doubleClicked(self, XXXXXXXViewObject): - run when object is doubleclicked
+    	    def getIcon(self): - returns path to the icon pixel map
+    	    def attach(self, bodyViewObject): - set display mode of object
+    	    def getDisplayModes(self, bodyViewObject): - return empty list
+    	    def getDefaultDisplayMode(self): - return default display mode
+    	    def setDisplayMode(self, mode): - set the mode to be mode
+    	    def updateData(self, obj, prop): - return
+    	    def setEdit(self, bodyViewObject, mode): - call the task dialog
+    	    def unsetEdit(self, bodyViewObject, mode): - close the task dialog
+
+4d.     TaskPanelDapXXXXXXXClass:
+	    def __init__(self, XXXXXXXTaskObject): - run on instantiation
+    	    def accept(self): - run when we press the OK button
+	    ..... [ various methods specific to the NikraDAP object]
+       	    def getStandardButtons(self): - set which buttons must appear
+
+---------------------
+
+InitGui.py		[Defines NikraDAP workbench and structure]
+    class DapWorkbench21C(Workbench):
+        def __init__(self):
+    	def Initialize(self):
+    	def ContextMenu(self, recipient):
+    	def MakeCommandList(self):
+    	def Activated(self):
+    	def Deactivated(self):
+    	def GetClassName(self):
+    	def __str__(self):
+
+DapContainerMod.py	[Parent container for DAP system]
+    def makeDapContainer(name="DapContainer"):
+        class CommandDapContainerClass:
+            def GetResources(self):
+       	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class DapContainerClass:
+            def __init__(self, containerObject):
+    	    def onDocumentRestored(self, containerObject):
+    	    def addPropertiesToObject(self, containerObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class ViewProviderDapContainerClass:
+            def __init__(self, containerViewObject):
+            def doubleClicked(self, containerViewObject):
+    	    def getIcon(self):
+    	    def updateData(self, obj, prop):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+DapBodyMod.py		[Definition of a body]
+    def makeDapBody(name="DapBody"):
+        class CommandDapBodyClass:
+            def GetResources(self):
+    	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class DapBodyClass:
+            def __init__(self, bodyObject):
+    	    def onDocumentRestored(self, bodyObject):
+    	    def addPropertiesToObject(self, bodyObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class ViewProviderDapBodyClass:
+	    def __init__(self, bodyViewObject):
+    	    def doubleClicked(self, bodyViewObject):
+    	    def getIcon(self):
+    	    def attach(self, bodyViewObject):
+    	    def getDisplayModes(self, bodyViewObject):
+    	    def getDefaultDisplayMode(self):
+    	    def setDisplayMode(self, mode):
+    	    def updateData(self, obj, prop):
+    	    def setEdit(self, bodyViewObject, mode):
+    	    def unsetEdit(self, bodyViewObject, mode):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class TaskPanelDapBodyClass:
+	    def __init__(self, bodyTaskObject):
+    	    def accept(self):
+    	    def getStandardButtons(self):
+    	    def selectedAss4SolidsToFormF(self):
+    	    def velocitiesToFormX_Callback(self):
+    	    def velocitiesToFormY_Callback(self):
+    	    def velocitiesToFormZ_Callback(self):
+    	    def angularVelToFormVal_Callback(self):
+    	    def velocitiesFromFormX_Callback(self):
+    	    def velocitiesFromFormY_Callback(self):
+    	    def velocitiesFromFormZ_Callback(self):
+    	    def angularVelFromFormVal_Callback(self):
+    	    def PlaneNormal_Callback(self):
+    	    def buttonAddPart_Callback(self):
+    	    def buttonRemovePart_Callback(self):
+    	    def partsListRowChanged_Callback(self, row):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+DapMaterialMod.py	[Definition of the density of the body components]
+    def makeDapMaterial(name="DapMaterial"):
+        class CommandDapMaterialClass:
+            def GetResources(self):
+    	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    
+        class DapMaterialClass:
+            def __init__(self, materialObject):
+    	    def onDocumentRestored(self, materialObject):
+    	    def addPropertiesToObject(self, materialObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    	    def __str__(self):
+
+        class ViewProviderDapMaterialClass:
+            def __init__(self, materialViewObject):
+    	    def doubleClicked(self, materialViewObject):
+    	    def getIcon(self):
+    	    def attach(self, materialViewObject):
+    	    def getDisplayModes(self, materialObject):
+    	    def getDefaultDisplayMode(self):
+    	    def setDisplayMode(self, mode):
+    	    def updateData(self, obj, prop):
+    	    def setEdit(self, materialViewObject, mode):
+    	    def unsetEdit(self, materialViewObject, mode):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class TaskPanelDapMaterialClass:
+            def __init__(self, materialTaskObject):
+    	    def accept(self):
+    	    def densityUnits_Callback(self):
+    	    def manualDensityEntered_Callback(self):
+    	    def MaterialComboChanged_Callback(self):
+    	    def showSelectionInGui_Callback(self, row, column):
+    	    def getStandardButtons(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+DapForceMod.py		[Definition of any forces
+    def makeDapForce(name="DapForce"):
+        class CommandDapForceClass:
+            def GetResources(self):
+    	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    
+        class DapForceClass:
+            def __init__(self, forceObject):
+    	    def onDocumentRestored(self, forceObject):
+    	    def addPropertiesToObject(self, forceObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class ViewProviderDapForceClass:
+            def __init__(self, forceViewObject):
+    	    def doubleClicked(self, forceViewObject):
+    	    def getIcon(self):
+    	    def attach(self, forceViewObject):
+    	    def getDisplayModes(self, forceViewObject):
+    	    def getDefaultDisplayMode(self):
+    	    def setDisplayMode(self, mode):
+    	    def updateData(self, obj, prop):
+    	    def setEdit(self, forceViewObject, mode):
+    	    def unsetEdit(self, forceViewObject, mode):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+        class TaskPanelDapForceClass:
+            def __init__(self, forceTaskObject):
+    	    def accept(self):
+    	    def updateToolTipF(self, ComboName, LabelList):
+    	    def body_1B1P_Changed_Callback(self):
+    	    def body_1B2P_Changed_Callback(self):
+    	    def body1_2B1P_Changed_Callback(self):
+    	    def body2_2B1P_Changed_Callback(self):
+    	    def body1_2B2P_Changed_Callback(self):
+    	    def body2_2B2P_Changed_Callback(self):
+            def point_1B1P_Changed_Callback(self):
+    	    def point1_1B2P_Changed_Callback(self):
+    	    def point2_1B2P_Changed_Callback(self):
+    	    def point_2B1P_Changed_Callback(self):
+    	    def point1_2B2P_Changed_Callback(self):
+    	    def point2_2B2P_Changed_Callback(self):
+    	    def gravityX_Changed_Callback(self):
+    	    def gravityY_Changed_Callback(self):
+    	    def gravityZ_Changed_Callback(self):
+    	    def actuator_Changed_Callback(self):
+    	    def getStandardButtons(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    	    def archiveUnusedForceCode(self):
+
+DapJointMod.py		[Definition of the joints between bodies]
+    def makeDapJoint(name="DapJoint"):
+    def initComboInFormF(ComboName, LabelList, index):
+    def updateToolTipF(ComboName, LabelList):
+
+        class CommandDapJointClass:
+            def GetResources(self):
+    	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    
+        class DapJointClass:
+            def __init__(self, jointObject):
+    	    def onDocumentRestored(self, jointObject):
+    	    def addPropertiesToObject(self, jointObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    
+        class ViewProviderDapJointClass:
+            def __init__(self, jointViewObject):
+    	    def doubleClicked(self, jointViewObject):
+    	    def getIcon(self):
+    	    def attach(self, jointViewObject):
+    	    def getDisplayModes(self, jointViewObject):
+    	    def getDefaultDisplayMode(self):
+    	    def setDisplayMode(self, mode):
+    	    def updateData(self, obj, prop):
+    	    def setEdit(self, jointViewObject, mode):
+    	    def unsetEdit(self, jointViewObject, mode):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+    
+        class TaskPanelDapJointClass:
+            def __init__(self, jointTaskObject):
+    	    def accept(self):
+    	    def hideAllEquationsF(self):
+    	    def showAllEquationsF(self):
+    	    def parmsToFormF(self):
+    	    def withRotationDriver_Changed_Callback(self):
+    	    def withTranslationDriver_Changed_Callback(self):
+    	    def driveFunc_Changed_Callback(self):
+    	    def jointType_Changed_Callback(self):
+    	    def body_1B1P_Changed_Callback(self):
+    	    def point_1B1P_Changed_Callback(self):
+    	    def body_1B2P_Changed_Callback(self):
+    	    def vectorTail_1B2P_Changed_Callback(self):
+    	    def vectorHead_1B2P_Changed_Callback(self):
+    	    def body1_2B2P_Changed_Callback(self):
+    	    def body2_2B2P_Changed_Callback(self):
+    	    def point1_2B2P_Changed_Callback(self):
+    	    def point2_2B2P_Changed_Callback(self):
+    	    def body1_2B3P_Changed_Callback(self):
+    	    def body2_2B3P_Changed_Callback(self):
+    	    def vectorTail_2B3P_Changed_Callback(self):
+    	    def vectorHead_2B3P_Changed_Callback(self):
+    	    def point_2B3P_Changed_Callback(self):
+    	    def body1_2B4P_Changed_Callback(self):
+    	    def body2_2B4P_Changed_Callback(self):
+    	    def vector1Tail_2B4P_Changed_Callback(self):
+    	    def vector1Head_2B4P_Changed_Callback(self):
+    	    def vector2Tail_2B4P_Changed_Callback(self):
+    	    def vector2Head_2B4P_Changed_Callback(self):
+    	    def bodyDisc_Changed_Callback(self):
+    	    def pointDiscCentre_Changed_Callback(self):
+    	    def pointDiscRim_Changed_Callback(self):
+    	    def radioA_Changed_Callback(self):
+    	    def radioB_Changed_Callback(self):
+    	    def radioC_Changed_Callback(self):
+    	    def radioD_Changed_Callback(self):
+    	    def radioE_Changed_Callback(self):
+    	    def radioF_Changed_Callback(self):
+    	    def getStandardButtons(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+DapSolverMod.py		[Selection of parameters for the DAP solution]
+    def makeDapSolver(name="DapSolver"):
+        class CommandDapSolverClass:
+            def GetResources(self):
+    	    def IsActive(self):
+    	    def Activated(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+	    
+        class DapSolverClass:
+            def __init__(self, solverObject):
+    	    def onDocumentRestored(self, solverObject):
+    	    def addPropertiesToObject(self, solverObject):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+	    
+        class ViewProviderDapSolverClass:
+            def __init__(self, solverViewObject):
+    	    def doubleClicked(self, solverViewObject):
+    	    def getIcon(self):
+    	    def attach(self, solverViewObject):
+    	    def getDisplayModes(self, obj):
+    	    def getDefaultDisplayMode(self):
+    	    def setDisplayMode(self, mode):
+    	    def updateData(self, obj, prop):
+    	    def setEdit(self, solverViewObject, mode):
+    	    def unsetEdit(self, viewobj, mode):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+	    
+        class TaskPanelDapSolverClass:
+            def __init__(self, solverTaskObject):
+    	    def accept(self):
+    	    def outputAnimOnlyCheckboxChanged_Callback(self):
+    	    def solveButtonClicked_Callback(self):
+    	    def getFolderDirectory_Callback(self):
+    	    def accuracyChanged_Callback(self):
+    	    def getStandardButtons(self):
+    	    def __load__(self):
+    	    def __dump__(self, state):
+
+DapMainMod.py		[Main DAP calculation module]
+    class DapMainC:
+        def __init__(self, simEnd, simDelta, Accuracy, correctInitial):
+    	def MainSolve(self):
+    	def Analysis(self, tick, uArray):
+    	def correctInitialConditions(self):
+    	def updatePointPositions(self):
+    	def updatePointVelocities(self):
+    	def cleanUpIndices(self, bodyName, bodyIndex):
+    	def clearZombieBodies(self, bodyObjDict):
+    	def GetconstraintsF(self, tick):
+    	def GetJacobianF(self):
+    	def RHSAcc(self, tick):
+    	def RHSVel(self, tick):
+    	def Revolute_constraint(self, jointObj, tick):
+    	def Revolute_Jacobian(self, jointObj):
+    	def Revolute_Acc(self, jointObj, tick):
+    	def Revolute_Revolute_constraint(self, jointObj, tick):
+    	def Revolute_Revolute_Jacobian(self, jointObj):
+    	def Revolute_Revolute_Acc(self, jointObj, tick):
+    	def Rigid_constraint(self, jointObj, tick):
+    	def Rigid_Jacobian(self, jointObj):
+    	def Rigid_Acc(self, jointObj, tick):
+    	def Translational_constraint(self, jointObj, tick):
+    	def Translational_Jacobian(self, jointObj):
+    	def Translational_Acc(self, jointObj, tick):
+    	def Translational_Revolute_constraint(self, jointObj, tick):
+    	def Translational_Revolute_Jacobian(self, jointObj):
+    	def Translational_Revolute_Acc(self, jointObj, tick):
+    	def Driven_Revolute_constraint(self, jointObj, tick):
+    	def Driven_Revolute_Jacobian(self, jointObj):
+    	def Driven_Revolute_Acc(self, jointObj, tick):
+    	def Driven_Translational_constraint(self, jointObj, tick):
+    	def Driven_Translational_Jacobian(self, jointObj):
+    	def Driven_Translational_Acc(self, jointObj, tick):
+    	def Disc_constraint(self, jointObj, tick):
+    	def Disc_Jacobian(self, jointObj):
+    	def Disc_Acc(self, jointObj, tick):
+    	def outputResults(self, timeValues, uResults):
+    	def makeForceArray(self):
+    	def initNumPyArrays(self, maxNumPoints):
+    	def __load__(self):
+    	def __dump__(self, state):
+
+DapAnimationMod.py	[Animation of the solution]
+    class CommandDapAnimationClass:
+        def GetResources(self):
+    	def IsActive(self):
+    	def Activated(self):
+    	def __load__(self):
+    	def __dump__(self, state):
+
+    class ViewProviderDapAnimateClass:
+        def __init__(self, animateViewObject):
+    	def doubleClicked(self, animateViewObject):
+    	def getIcon(self):
+    	def attach(self, animateViewObject):
+    	def updateData(self, obj, prop):
+    	def __load__(self):
+    	def __dump__(self, state):
+
+    class TaskPanelDapAnimateClass:
+        def __init__(self, solverObj, dapDocument, animationDocument):
+    	def reject(self):
+    	def playStart_Callback(self):
+    	def stopStop_Callback(self):
+    	def onTimerTimeout_Callback(self):
+    	def changePlaySpeed_Callback(self, newSpeed):
+    	def moveObjects_Callback(self, tick):
+    	def getStandardButtons(self):
+    	def __load__(self):
+    	def __dump__(self, state):
+
+DapFunctionMod.py	[Module containing mathematical function calculations]
+    class FunctionC:
+        def __init__(self, FunctionParameterList):
+    	def getFofT(self, fType, t):
+    	def function_a(self, tt):
+    	def function_b(self, tt):
+    	def function_c(self, tt):
+    	def function_d(self, tt):
+    	def function_e(self, t):
+    	def function_f(self, t):
+    	def __load__(self):
+    	def __dump__(self, state):
+
+DapToolsMod.py		[Miscellaneous tools used by the NikraDAP system]
+    def getActiveContainerObject():
+    def setActiveContainer(containerObj):
+    def getPointsFromBodyName(bodyName, bodyObjDict):
+    def condensePoints(pointNames, pointLabels, pointLocals):
+    def parsePoint(pointString):
+    def addObjectProperty(newobject, newproperty, initVal, newtype, *args):
+    def getDictionary(DAPName):
+    def getAllSolidsLists():
+    def getDictionaryOfBodyPoints():
+    def getMaterialObject():
+    def getDapModulePath():
+    def computeCoGAndMomentInertia(bodyObj):
+    def DrawRotArrow(Point, LeftRight, diameter):
+    def DrawRigidBolt(Point, diam, length):
+    def DrawTransArrow(Point1, Point2, diameter):
+    def minMidMax3(x, y, z, minMidMax):
+    def minMidMaxVec(Vector, minMidMax):
+    def RotationMatrixNp(phi):
+    def Mess(string):
+    def MessNoLF(string):
+    def PrintVec(vec):
+    def Np3D(arr):
+    def Np2D(arr):
+    def Np1D(LF, arr):
+    def Np1Ddeg(LF, arr):
+    def Round(num):
+    def decorateObject(objectToDecorate, body_I_object, body_J_object):
+    def decorateObjectLegacy(objectToDecorate, body_I_object, body_J_object):
+    def OldDecorate():
+    def NormalizeNpVec(vecNp):
+    def Rot90NumPy(a):
+    def CADVecToNumPyF(CADVec):
+    def nicePhiPlease(vectorsRelativeCoG):
+    def Contact(constraintIndex, indexPoint, bodyObj, kConst, eConst, FlagsList, penetrationDot0List,
+    def Contact_FM(delta, deltaDot, deltaDot0, kConst, eConst):
+    def Contact_LN(delta, deltaDot, deltaDot0, kConst, eConst):
+    def Friction_A(mu_s, mu_d, v_s, p, k_t, v, fN):
+    def Friction_B(mu_s, mu_d, mu_v, v_t, fnt, v, fN):
+
+=====================================================

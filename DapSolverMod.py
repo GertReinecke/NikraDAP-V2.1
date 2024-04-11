@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -118,13 +118,16 @@ class CommandDapSolverClass:
         DT.getActiveContainerObject().addObject(makeDapSolver())
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__getstate__")
+            DT.Mess("TaskPanelDapSolverClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__setstate__")
+            DT.Mess("TaskPanelDapSolverClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class DapSolverClass:
     if Debug:
@@ -155,13 +158,16 @@ class DapSolverClass:
         DT.addObjectProperty(solverObject, "BodyNames",       [],    "App::PropertyStringList", "", "")
         DT.addObjectProperty(solverObject, "BodyCoG",         [],    "App::PropertyVectorList", "", "")
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("DapSolverClass-__getstate__")
+            DT.Mess("DapSolverClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("DapSolverClass-__setstate__")
+            DT.Mess("DapSolverClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class ViewProviderDapSolverClass:
     if Debug:
@@ -225,13 +231,16 @@ class ViewProviderDapSolverClass:
             DT.Mess("ViewProviderDapSolverClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("ViewProviderDapSolverClass-__getstate__")
+            DT.Mess("ViewProviderDapSolverClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapSolverClass-__setstate__")
+            DT.Mess("ViewProviderDapSolverClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class TaskPanelDapSolverClass:
     """Taskpanel for Executing DAP Solver User Interface"""
@@ -365,11 +374,14 @@ class TaskPanelDapSolverClass:
             DT.Mess("TaskPanelDapSolverClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__getstate__")
+            DT.Mess("TaskPanelDapSolverClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__setstate__")
+            DT.Mess("TaskPanelDapSolverClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================

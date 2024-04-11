@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -174,7 +174,7 @@ class DapMainC:
         if Debug:
             DT.Mess("DapMainClass-__init__")
 
-        # Save the time steps passed via the __init__ function
+        # Save the parameters passed via the __init__ function
         self.simEnd = simEnd
         self.simDelta = simDelta
         self.correctInitial = correctInitial
@@ -665,7 +665,7 @@ class DapMainC:
                 jointObj.Radius = np.sqrt(radiusVector.dot(radiusVector))
                 jointObj.phi0 = np.arctan2(radiusVector[1], radiusVector[0])
             else:
-                CAD.Console.PrintError("Unknown Joint Type - this should never occur\n")
+                CAD.Console.PrintError("Unknown Joint Type - this should never occur"+str(jointObj.JointType)+"\n")
         # Next Joint Object
 
         # Run through the joints and find if any of them use a driver function
@@ -2360,9 +2360,9 @@ class DapMainC:
                 # Matlab Code from Nikravesh: DAP_BC
                 # ==================================
                 # TODO: Future implementation - not explicitly handled by Nikravesh
-                DT.Console.PrintError("Still in development\n")
+                CAD.Console.PrintError("Still in development\n")
             else:
-                DT.Console.PrintError("Unknown Force type - this should never occur\n")
+                CAD.Console.PrintError("Unknown Force type - this should never occur\n")
         # Next forceIndex
 
         # ==================================
@@ -2432,11 +2432,14 @@ class DapMainC:
 
         self.forceArrayNp = np.zeros((self.numMovBodiesx3,), dtype=np.float64)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapMainClass-__getstate__")
+            DT.Mess("TaskPanelDapMainClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapMainClass-__setstate__")
+            DT.Mess("TaskPanelDapMainClass-__dump__")
+        if state:
+            self.Type = state
     #  =========================================================================

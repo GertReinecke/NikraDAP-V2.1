@@ -18,7 +18,7 @@
 # *_____________________________________________________________________________ *
 # *                                                                              *
 # *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.0 (c) 2023: ####           *
+# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
 # *        ##########################################################            *
 # *                                                                              *
 # *                     Authors of this workbench:                               *
@@ -45,8 +45,8 @@
 # *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
 # *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
 # *                                                                              *
-# * Copyright (c) 2023 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2023 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
+# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
+# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
 # * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
 # * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
 # * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
@@ -141,13 +141,16 @@ class CommandDapAnimationClass:
         )
         CADGui.Control.showDialog(taskd)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("CommandDapAnimClass-__getstate__")
+            DT.Mess("CommandDapAnimClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("CommandDapAnimClass-__setstate__")
+            DT.Mess("CommandDapAnimClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
 class ViewProviderDapAnimateClass:
     """ A view provider for the DapAnimate container object """
@@ -183,11 +186,12 @@ class ViewProviderDapAnimateClass:
     def updateData(self, obj, prop):
         return
     # -------------------------------------------------------------------------------------------------
-    def __getstate__(self):
-        return None
+    def __load__(self):
+        return self.Type
     # -------------------------------------------------------------------------------------------------
-    def __setstate__(self, state):
-        return None
+    def __dump__(self, state):
+        if state:
+            self.Type = state
 # =============================================================================
 class TaskPanelDapAnimateClass:
     """Taskpanel for Running an animation"""
@@ -336,11 +340,14 @@ class TaskPanelDapAnimateClass:
             DT.Mess("TaskPanelDapAnimateClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Close)
     #  -------------------------------------------------------------------------
-    def __getstate__(self):
+    def __load__(self):
         if Debug:
-            DT.Mess("TaskPanelDapAnimationClass-__getstate__")
+            DT.Mess("TaskPanelDapAnimationClass-__load__")
+        return self.Type
     #  -------------------------------------------------------------------------
-    def __setstate__(self, state):
+    def __dump__(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapAnimationClass-__setstate__")
+            DT.Mess("TaskPanelDapAnimationClass-__dump__")
+        if state:
+            self.Type = state
 # =============================================================================
