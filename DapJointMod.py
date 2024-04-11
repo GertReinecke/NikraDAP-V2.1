@@ -321,9 +321,67 @@ class TaskPanelDapJointClass:
             self.bodyLabels.append(bodyObj.Label)
             self.bodyObjects.append(bodyObj)
 
+        if self.jointTaskObject.JointType == DT.JOINT_TYPE_DICTIONARY["Revolute"]:
+            # Switch on rotation "driver function select" and switch off translation "driver function select"
+            self.form.withRotationDriver.setVisible(True)
+            self.form.withTranslationDriver.setVisible(False)
+        elif self.jointTaskObject.JointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
+            # Switch on translation "driver function select" and switch off rotation "driver function select"
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withTranslationDriver.setVisible(True)
+        else:
+            # Switch off both "driver function selects"
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withTranslationDriver.setVisible(False)
+
+        if self.jointTaskObject.FunctType == -1:
+            # We hide all equations
+            self.hideAllEquationsF()
+            # Switch off all Radio Buttons
+            # self.form.radioButtonA.setVisible(False)
+            # self.form.radioButtonB.setVisible(False)
+            # self.form.radioButtonC.setVisible(False)
+            # self.form.radioButtonD.setVisible(False)
+            # self.form.radioButtonE.setVisible(False)
+            # self.form.radioButtonF.setVisible(False)
+            self.form.radioButtonA.setChecked(False)
+            self.form.radioButtonB.setChecked(False)
+            self.form.radioButtonC.setChecked(False)
+            self.form.radioButtonD.setChecked(False)
+            self.form.radioButtonE.setChecked(False)
+            self.form.radioButtonF.setChecked(False)
+        else:
+            self.form.withRotationDriver.setChecked(True)
+            # We show all equations
+            self.showAllEquationsF()
+            # Switch on the relevant Radio Buttons
+            if jointTaskObject.FunctType == 0:
+                self.form.radioButtonA.setChecked(True)
+            elif jointTaskObject.FunctType == 1:
+                self.form.radioButtonB.setChecked(True)
+            elif jointTaskObject.FunctType == 2:
+                self.form.radioButtonC.setChecked(True)
+            elif jointTaskObject.FunctType == 3:
+                self.form.radioButtonD.setChecked(True)
+            elif jointTaskObject.FunctType == 4:
+                self.form.radioButtonE.setChecked(True)
+            elif jointTaskObject.FunctType == 5:
+                self.form.radioButtonF.setChecked(True)
+            # if jointTaskObject.FunctType == 0:
+            #     self.form.radioButtonA.setVisible(True)
+            # elif jointTaskObject.FunctType == 1:
+            #     self.form.radioButtonB.setVisible(True)
+            # elif jointTaskObject.FunctType == 2:
+            #     self.form.radioButtonC.setVisible(True)
+            # elif jointTaskObject.FunctType == 3:
+            #     self.form.radioButtonD.setVisible(True)
+            # elif jointTaskObject.FunctType == 4:
+            #     self.form.radioButtonE.setVisible(True)
+            # elif jointTaskObject.FunctType == 5:
+            #     self.form.radioButtonF.setVisible(True)
+
         # Connect changes to the respective Callback functions
         self.form.jointType.currentIndexChanged.connect(self.jointType_Changed_Callback)
-
 
         self.form.body_1B1P.currentIndexChanged.connect(self.body_1B1P_Changed_Callback)
         self.form.body_1B2P.currentIndexChanged.connect(self.body_1B2P_Changed_Callback)
@@ -351,8 +409,9 @@ class TaskPanelDapJointClass:
         self.form.pointDiscCentre.currentIndexChanged.connect(self.pointDiscCentre_Changed_Callback)
         self.form.pointDiscRim.currentIndexChanged.connect(self.pointDiscRim_Changed_Callback)
 
+        self.form.withRotationDriver.toggled.connect(self.withRotationDriver_Changed_Callback)
+        self.form.withTranslationDriver.toggled.connect(self.withTranslationDriver_Changed_Callback)
 
-        self.form.withDriver.toggled.connect(self.withDriver_Changed_Callback)
         self.form.radioButtonA.toggled.connect(self.radioA_Changed_Callback)
         self.form.radioButtonB.toggled.connect(self.radioB_Changed_Callback)
         self.form.radioButtonC.toggled.connect(self.radioC_Changed_Callback)
@@ -361,23 +420,13 @@ class TaskPanelDapJointClass:
         self.form.radioButtonF.toggled.connect(self.radioF_Changed_Callback)
 
         # Set the joint type combo box up according to the jointObject
-        self.form.jointType.clear()
-        jointTypeCombo = ['Undefined'] + DT.JOINT_TYPE
-        self.form.jointType.addItems(jointTypeCombo)
+        jointTypeComboList = ['Undefined'] + DT.JOINT_TYPE
+        self.form.jointType.addItems(jointTypeComboList)
+
         self.form.jointType.setCurrentIndex(jointTaskObject.JointType + 1)
 
-        # Initialise the withDriver checkbox and the a radio button
-        self.form.radioButtonA.setChecked(True)
-        self.form.withDriver.setChecked(False)
-        self.form.withDriver.setEnabled(True)
-        self.jointTaskObject.FunctType = -1
-
-        # Activate the functions definition pages only if we have a Driven-Revolute or Driven-Translation joint
-        '''if jointTaskObject.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"] or \
-                jointTaskObject.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
-            self.showAllEquationsF()
-        else:
-            self.greyAllEquationsF()'''
+        # self.form.body1_2B2P.Index() = jointTaskObject.body_I_Index + 1
+        # self.form.body2_2B2P.currentIndex(jointTaskObject.body_J_Index + 1)
 
         # Copy over the current driver function parameters to the form in case we need them
         self.parmsToFormF()
@@ -400,6 +449,7 @@ class TaskPanelDapJointClass:
             self.jointTaskObject.point_J_j_Name = ""
             self.jointTaskObject.point_J_j_Label = ""
             self.jointTaskObject.point_J_j_Index = -1
+            # pass
         elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
             pass
         elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation-Revolute"]:
@@ -417,13 +467,32 @@ class TaskPanelDapJointClass:
         # Switch off the Task panel
         GuiDocument = CADGui.getDocument(self.jointTaskObject.Document)
         GuiDocument.resetEdit()
+
+        # Transfer parms from form to jointTaskObject
+        if self.jointTaskObject.FunctType == 0:
+            self.jointTaskObject.Coeff0 = self.form.FuncACoeff0.value()
+            self.jointTaskObject.Coeff1 = self.form.FuncACoeff1.value()
+            self.jointTaskObject.Coeff2 = self.form.FuncACoeff2.value()
+            self.jointTaskObject.startTimeDriveFunc = self.form.FuncAstartTime.value()
+            self.jointTaskObject.endTimeDriveFunc = self.form.FuncAendTime.value()
+        elif self.jointTaskObject.FunctType == 1:
+            self.jointTaskObject.startTimeDriveFunc = self.form.FuncBstartTime.value()
+            self.jointTaskObject.startValueDriveFunc = self.form.FuncBstartValue.value()
+            self.jointTaskObject.endTimeDriveFunc = self.form.FuncBendTime.value()
+            self.jointTaskObject.endValueDriveFunc = self.form.FuncBendValue.value()
+
     #  -------------------------------------------------------------------------
     def hideAllEquationsF(self):
         if Debug:
             DT.Mess("TaskPanelDapJointClass-hideAllEquations")
 
-        self.form.allRadioButtons.setEnabled(False)
         self.form.funcCoeff.setHidden(True)
+        self.form.radioButtonA.setVisible(False)
+        self.form.radioButtonB.setVisible(False)
+        self.form.radioButtonC.setVisible(False)
+        self.form.radioButtonD.setVisible(False)
+        self.form.radioButtonE.setVisible(False)
+        self.form.radioButtonF.setVisible(False)
 
         # The html image of the equations does not grey out when we set them hidden
         # So we have two copies of each, the one normal and the one grey
@@ -445,9 +514,22 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-showAllEquationsF")
 
-        self.form.allRadioButtons.setEnabled(True)
+        # We show the options for a revolute / translation driver
+        # if self.form.jointType.currentIndex() == DT.JOINT_TYPE_DICTIONARY["Revolute"] - 1:
+        #     self.form.withRotationDriver.setVisible(True)
+        #     self.form.withRotationDriver.setEnabled(True)
+        # elif self.form.jointType.currentIndex() == DT.JOINT_TYPE_DICTIONARY["Translation"] - 1:
+        #     self.form.withTranslationDriver.setVisible(True)
+        #     self.form.withTranslationDriver.setEnabled(True)
+
         self.form.funcCoeff.setEnabled(True)
         self.form.funcCoeff.setVisible(True)
+        self.form.radioButtonA.setVisible(True)
+        self.form.radioButtonB.setVisible(True)
+        self.form.radioButtonC.setVisible(True)
+        self.form.radioButtonD.setVisible(True)
+        self.form.radioButtonE.setVisible(True)
+        self.form.radioButtonF.setVisible(True)
 
         # The html image of the equations does not grey out when we set them hidden
         # So we have two copies of each, the one normal and the one grey
@@ -517,8 +599,28 @@ class TaskPanelDapJointClass:
         self.form.FuncFstartTime.setValue(self.jointTaskObject.startTimeDriveFunc)
         self.form.FuncFendTime.setValue(self.jointTaskObject.endTimeDriveFunc)
     #  -------------------------------------------------------------------------
-    def withDriver_Changed_Callback(self):
-        if self.form.withDriver.isChecked() == False:
+    def withRotationDriver_Changed_Callback(self):
+        if self.form.withRotationDriver.isChecked() == False:
+            self.jointTaskObject.FunctType = -1
+            self.hideAllEquationsF()
+        else:
+            self.showAllEquationsF()
+            # if self.form.radioButtonA.isChecked():
+            #     self.jointTaskObject.FunctType = 0
+
+            # elif self.form.radioButtonB.isChecked():
+            #     self.jointTaskObject.FunctType = 1
+            # elif self.form.radioButtonC.isChecked():
+            #     self.jointTaskObject.FunctType = 2
+            # elif self.form.radioButtonD.isChecked():
+            #     self.jointTaskObject.FunctType = 3
+            # elif self.form.radioButtonE.isChecked():
+            #     self.jointTaskObject.FunctType = 4
+            # elif self.form.radioButtonF.isChecked():
+            #     self.jointTaskObject.FunctType = 5
+    #  -------------------------------------------------------------------------
+    def withTranslationDriver_Changed_Callback(self):
+        if self.form.withTranslationDriver.isChecked() == False:
             self.jointTaskObject.FunctType = -1
             self.hideAllEquationsF()
         else:
@@ -550,7 +652,8 @@ class TaskPanelDapJointClass:
             DT.Mess("TaskPanelDapJointClass-jointType_Changed_Callback")
 
         formJointType = self.form.jointType.currentIndex() - 1
-        self.jointTaskObject.JointType = formJointType
+        if self.form.jointType.currentIndex() > 0:
+            self.jointTaskObject.JointType = formJointType
 
         # Set up which page of body definition we must see
         # Pages in the joint dialog
@@ -563,25 +666,51 @@ class TaskPanelDapJointClass:
         # 6 - expansion
         #   And whether the driven function stuff is available
         #   And populate the body combo boxes in the applicable page
-        if formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute"] or \
-                formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute-Revolute"] or \
-                formJointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
-            initComboInFormF(self.form.body1_2B2P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body2_2B2P, self.bodyLabels, -1)
+        if formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute"]:
+            # initComboInFormF(self.form.body1_2B2P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body2_2B2P, self.bodyLabels, -1)
+            initComboInFormF(self.form.body1_2B2P, self.bodyLabels, self.jointTaskObject.body_I_Index)
+            initComboInFormF(self.form.body2_2B2P, self.bodyLabels, self.jointTaskObject.body_J_Index)
             self.form.definitionWidget.setCurrentIndex(0)
+            self.form.withRotationDriver.setVisible(True)
+            self.form.withRotationDriver.setEnabled(True)
+            self.form.withTranslationDriver.setVisible(False)
+            self.form.withTranslationDriver.setEnabled(False)
+            # self.hideAllEquationsF()
+        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute-Revolute"] or \
+                formJointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
+            # initComboInFormF(self.form.body1_2B2P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body2_2B2P, self.bodyLabels, -1)
+            initComboInFormF(self.form.body1_2B2P, self.bodyLabels, self.jointTaskObject.body_I_Index)
+            initComboInFormF(self.form.body2_2B2P, self.bodyLabels, self.jointTaskObject.body_J_Index)
+            self.form.definitionWidget.setCurrentIndex(0)
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withTranslationDriver.setVisible(False)
             self.hideAllEquationsF()
         elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
-            initComboInFormF(self.form.body1_2B4P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body2_2B4P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body1_2B4P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body2_2B4P, self.bodyLabels, -1)
+            initComboInFormF(self.form.body1_2B4P, self.bodyLabels, self.jointTaskObject.body_I_Index)
+            initComboInFormF(self.form.body2_2B4P, self.bodyLabels, self.jointTaskObject.body_J_Index)
             self.form.definitionWidget.setCurrentIndex(1)
+            self.form.withTranslationDriver.setVisible(True)
+            self.form.withTranslationDriver.setEnabled(True)
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withRotationDriver.setEnabled(False)
             self.hideAllEquationsF()
         elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation-Revolute"]:
-            initComboInFormF(self.form.body1_2B3P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body2_2B3P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body1_2B3P, self.bodyLabels, -1)
+            # initComboInFormF(self.form.body2_2B3P, self.bodyLabels, -1)
+            initComboInFormF(self.form.body1_2B3P, self.bodyLabels, self.jointTaskObject.body_I_Index)
+            initComboInFormF(self.form.body2_2B3P, self.bodyLabels, self.jointTaskObject.body_J_Index)
             self.form.definitionWidget.setCurrentIndex(2)
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withTranslationDriver.setVisible(False)
             self.hideAllEquationsF()
         elif formJointType == DT.JOINT_TYPE_DICTIONARY["Disc"]:
             initComboInFormF(self.form.bodyDisc, self.bodyLabels, -1)
+            self.form.withRotationDriver.setVisible(False)
+            self.form.withTranslationDriver.setVisible(False)
             self.form.definitionWidget.setCurrentIndex(5)
             self.hideAllEquationsF()
     #  -------------------------------------------------------------------------
@@ -612,7 +741,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.point_1B1P.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.point_1B1P, ['Undefined'])
@@ -654,7 +783,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vectorTail_1B2P.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.vectorTail_1B2P, ['Undefined'])
@@ -669,7 +798,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vectorHead_1B2P.currentIndex() - 1
         self.jointTaskObject.point_I_j_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_j_Name = ""
             self.jointTaskObject.point_I_j_Label = ""
             updateToolTipF(self.form.vectorHead_1B2P, ['Undefined'])
@@ -683,44 +812,66 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapjointClass-body1_2B2P_Changed_Callback")
 
-        bodyIndex = self.form.body1_2B2P.currentIndex() - 1
-        self.jointTaskObject.body_I_Index = bodyIndex
-        if bodyIndex == -1:
+        newBodyIndex = self.form.body1_2B2P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
             self.jointTaskObject.body_I_Label = ""
+            # self.jointTaskObject.point_I_i_Index = -1
             updateToolTipF(self.form.body1_2B2P, ['Undefined'])
-            initComboInFormF(self.form.point1_2B2P, ['Undefined'], -1)
-            updateToolTipF(self.form.point1_2B2P, ['Undefined'])
-        else:
-            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body1_2B2P, self.pointLabelListFirstBody)
+            # initComboInFormF(self.form.point1_2B2P, ['Undefined'], -1)
+            # updateToolTipF(self.form.point1_2B2P, ['Undefined'])
             initComboInFormF(self.form.point1_2B2P, self.pointLabelListFirstBody, -1)
+        # elif newBodyIndex > -1:
+        if newBodyIndex > -1:
+            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body1_2B2P, self.pointLabelListFirstBody)
+            if newBodyIndex == self.jointTaskObject.body_I_Index:
+                initComboInFormF(self.form.point1_2B2P, self.pointLabelListFirstBody, self.jointTaskObject.point_I_i_Index)
+            else:
+                initComboInFormF(self.form.point1_2B2P, self.pointLabelListFirstBody, -1)
+                # self.jointTaskObject.point_I_i_Index = -1
             updateToolTipF(self.form.point1_2B2P, self.pointLabelListFirstBody)
+            self.jointTaskObject.body_I_Index = newBodyIndex
+        # else:
+        if self.jointTaskObject.body_I_Index > -1:
+            self.form.body1_2B2P.setCurrentIndex(self.jointTaskObject.body_I_Index + 1)
+
     # --------------------------------------------------------------------------
     def body2_2B2P_Changed_Callback(self):
         """Populate form with a new list of point labels when a body is Changed"""
         if Debug:
             DT.Mess("TaskPanelDapjointClass-body2_2B2P_Changed_Callback")
 
-        bodyIndex = self.form.body2_2B2P.currentIndex() - 1
-        self.jointTaskObject.body_J_Index = bodyIndex
-        if bodyIndex == -1:
+        newBodyIndex = self.form.body2_2B2P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_J_Index == -1:
             self.jointTaskObject.body_J_Name = ""
             self.jointTaskObject.body_J_Label = ""
             updateToolTipF(self.form.body2_2B2P, ['Undefined'])
-            initComboInFormF(self.form.point2_2B2P, ['Undefined'], -1)
+            # initComboInFormF(self.form.point2_2B2P, ['Undefined'], -1)
             updateToolTipF(self.form.point2_2B2P, ['Undefined'])
-        else:
-            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_J_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_J_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body2_2B2P, self.pointLabelListSecondBody)
             initComboInFormF(self.form.point2_2B2P, self.pointLabelListSecondBody, -1)
+            # self.jointTaskObject.point_J_i_Index = -1
+        # elif newBodyIndex > -1:
+        if newBodyIndex > -1:
+            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_J_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_J_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body2_2B2P, self.pointLabelListSecondBody)
+            if newBodyIndex == self.jointTaskObject.body_J_Index:
+                initComboInFormF(self.form.point2_2B2P, self.pointLabelListSecondBody, self.jointTaskObject.point_J_i_Index)
+            else:
+                initComboInFormF(self.form.point2_2B2P, self.pointLabelListSecondBody, -1)
+                # self.jointTaskObject.point_J_i_Index = -1
             updateToolTipF(self.form.point2_2B2P, self.pointLabelListSecondBody)
+            self.jointTaskObject.body_J_Index = newBodyIndex
+        # else:
+        if self.jointTaskObject.body_J_Index > -1:
+            self.form.body2_2B2P.setCurrentIndex(self.jointTaskObject.body_J_Index + 1)
+
     #  -------------------------------------------------------------------------
     def point1_2B2P_Changed_Callback(self):
         if Debug:
@@ -728,7 +879,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.point1_2B2P.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.point1_2B2P, ['Undefined'])
@@ -743,7 +894,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.point2_2B2P.currentIndex() - 1
         self.jointTaskObject.point_J_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_J_i_Name = ""
             self.jointTaskObject.point_J_i_Label = ""
             updateToolTipF(self.form.point2_2B2P, ['Undefined'])
@@ -757,48 +908,106 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body1_2B3P_Changed_Callback")
 
-        bodyIndex = self.form.body1_2B3P.currentIndex() - 1
-        self.jointTaskObject.body_I_Index = bodyIndex
-        if bodyIndex == -1:
+        # bodyIndex = self.form.body1_2B3P.currentIndex() - 1
+        # self.jointTaskObject.body_I_Index = bodyIndex
+        # if bodyIndex == -1:
+        #     self.jointTaskObject.body_I_Name = ""
+        #     self.jointTaskObject.body_I_Label = ""
+        #     updateToolTipF(self.form.body1_2B3P, ['Undefined'])
+        #     initComboInFormF(self.form.vectorHead_2B3P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
+        #     initComboInFormF(self.form.vectorTail_2B3P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
+
+        newBodyIndex = self.form.body1_2B3P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
             self.jointTaskObject.body_I_Label = ""
             updateToolTipF(self.form.body1_2B3P, ['Undefined'])
-            initComboInFormF(self.form.vectorHead_2B3P, ['Undefined'], -1)
-            updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
-            initComboInFormF(self.form.vectorTail_2B3P, ['Undefined'], -1)
-            updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
-        else:
-            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body1_2B3P, self.pointLabelListFirstBody)
-            initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
-            updateToolTipF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody)
             initComboInFormF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
+            initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
+
+        # else:
+        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
+        #     self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
+        #     self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
+        #     updateToolTipF(self.form.body1_2B3P, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody)
+
+        if newBodyIndex > -1:
+            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body1_2B3P, self.pointLabelListFirstBody)
+            if newBodyIndex == self.jointTaskObject.body_I_Index:
+                initComboInFormF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody, self.jointTaskObject.point_I_i_Index)
+                initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, self.jointTaskObject.point_I_j_Index)
+            else:
+                initComboInFormF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody, -1)
+                initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
             updateToolTipF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody)
+            updateToolTipF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody)
+            self.jointTaskObject.body_I_Index = newBodyIndex
+
+        if self.jointTaskObject.body_I_Index > -1:
+            self.form.body1_2B3P.setCurrentIndex(self.jointTaskObject.body_I_Index + 1)
+
     #  -------------------------------------------------------------------------
     def body2_2B3P_Changed_Callback(self):
         """The Body II Revolute combo box current index has _Changed"""
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body2_2B3P_Changed_Callback")
 
-        bodyIndex = self.form.body2_2B3P.currentIndex() - 1
-        self.jointTaskObject.body_J_Index = bodyIndex
-        if bodyIndex == -1:
+        # bodyIndex = self.form.body2_2B3P.currentIndex() - 1
+        # self.jointTaskObject.body_J_Index = bodyIndex
+        # if bodyIndex == -1:
+        #     self.jointTaskObject.body_J_Name = ""
+        #     self.jointTaskObject.body_J_Label = ""
+        #     updateToolTipF(self.form.body2_2B3P, ['Undefined'])
+        #     initComboInFormF(self.form.point_2B3P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.point_2B3P, ['Undefined'])
+
+        newBodyIndex = self.form.body2_2B3P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_J_Index == -1:
             self.jointTaskObject.body_J_Name = ""
             self.jointTaskObject.body_J_Label = ""
             updateToolTipF(self.form.body2_2B3P, ['Undefined'])
-            initComboInFormF(self.form.point_2B3P, ['Undefined'], -1)
-            updateToolTipF(self.form.point_2B3P, ['Undefined'])
-        else:
-            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_J_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_J_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body2_2B3P, self.pointLabelListSecondBody)
             initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, -1)
+            updateToolTipF(self.form.point_2B3P, ['Undefined'])
+
+        # else:
+        #     self.pointNameListSecondBody, self.pointLabelListSecondBody = \
+        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
+        #     self.jointTaskObject.body_J_Name = self.bodyNames[bodyIndex]
+        #     self.jointTaskObject.body_J_Label = self.bodyLabels[bodyIndex]
+        #     updateToolTipF(self.form.body2_2B3P, self.pointLabelListSecondBody)
+        #     initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, -1)
+        #     updateToolTipF(self.form.point_2B3P, self.pointLabelListSecondBody)
+
+        if newBodyIndex > -1:
+            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_J_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_J_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body2_2B3P, self.pointLabelListSecondBody)
+            if newBodyIndex == self.jointTaskObject.body_J_Index:
+                initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, self.jointTaskObject.point_J_i_Index)
+            else:
+                initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, -1)
             updateToolTipF(self.form.point_2B3P, self.pointLabelListSecondBody)
+            self.jointTaskObject.body_J_Index = newBodyIndex
+
+        if self.jointTaskObject.body_J_Index > -1:
+            self.form.body2_2B3P.setCurrentIndex(self.jointTaskObject.body_J_Index + 1)
+
+
     #  -------------------------------------------------------------------------
     def vectorTail_2B3P_Changed_Callback(self):
         if Debug:
@@ -806,7 +1015,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vectorTail_2B3P.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
@@ -821,7 +1030,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vectorHead_2B3P.currentIndex() - 1
         self.jointTaskObject.point_I_j_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_j_Name = ""
             self.jointTaskObject.point_I_j_Label = ""
             updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
@@ -836,7 +1045,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.point_2B3P.currentIndex() - 1
         self.jointTaskObject.point_J_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_J_i_Name = ""
             self.jointTaskObject.point_J_i_Label = ""
             updateToolTipF(self.form.point_2B3P, ['Undefined'])
@@ -850,52 +1059,114 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body1_2B4P_Changed_Callback")
 
-        bodyIndex = self.form.body1_2B4P.currentIndex() - 1
-        self.jointTaskObject.body_I_Index = bodyIndex
-        if bodyIndex == -1:
+        # newBodyIndex = self.form.body1_2B4P.currentIndex() - 1
+        # self.jointTaskObject.body_I_Index = newBodyIndex
+        # if newBodyIndex == -1:
+        #     self.jointTaskObject.body_I_Name = ""
+        #     self.jointTaskObject.body_I_Label = ""
+        #     updateToolTipF(self.form.body1_2B4P, ['Undefined'])
+        #     initComboInFormF(self.form.vector1Head_2B4P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
+        #     initComboInFormF(self.form.vector1Tail_2B4P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
+
+        newBodyIndex = self.form.body1_2B4P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
             self.jointTaskObject.body_I_Label = ""
             updateToolTipF(self.form.body1_2B4P, ['Undefined'])
-            initComboInFormF(self.form.vector1Head_2B4P, ['Undefined'], -1)
-            updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
-            initComboInFormF(self.form.vector1Tail_2B4P, ['Undefined'], -1)
-            updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
-        else:
-            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body1_2B4P, self.pointLabelListFirstBody)
-            initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
-            updateToolTipF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody)
             initComboInFormF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
+            initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
+
+        # else:
+        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+        #         DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+        #     self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
+        #     self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
+        #     updateToolTipF(self.form.body1_2B4P, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody)
+
+        if newBodyIndex > -1:
+            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body1_2B4P, self.pointLabelListFirstBody)
+            if newBodyIndex == self.jointTaskObject.body_I_Index:
+                initComboInFormF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody, self.jointTaskObject.point_I_i_Index)
+                initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, self.jointTaskObject.point_I_j_Index)
+            else:
+                initComboInFormF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody, -1)
+                initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
             updateToolTipF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody)
+            updateToolTipF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody)
+            self.jointTaskObject.body_I_Index = newBodyIndex
+
+        if self.jointTaskObject.body_I_Index > -1:
+            self.form.body1_2B4P.setCurrentIndex(self.jointTaskObject.body_I_Index + 1)
+
     #  -------------------------------------------------------------------------
     def body2_2B4P_Changed_Callback(self):
         """The Body2 combo box in the Translation joint page current index has _Changed"""
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body2_2B4P_Changed_Callback")
 
-        bodyIndex = self.form.body2_2B4P.currentIndex() - 1
-        self.jointTaskObject.body_J_Index = bodyIndex
-        if bodyIndex == -1:
+        # newBodyIndex = self.form.body2_2B4P.currentIndex() - 1
+        # self.jointTaskObject.body_J_Index = newBodyIndex
+        # if newBodyIndex == -1:
+        #     self.jointTaskObject.body_J_Name = ""
+        #     self.jointTaskObject.body_J_Label = ""
+        #     updateToolTipF(self.form.body2_2B4P, ['Undefined'])
+        #     initComboInFormF(self.form.vector2Tail_2B4P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
+        #     initComboInFormF(self.form.vector2Head_2B4P, ['Undefined'], -1)
+        #     updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
+
+        newBodyIndex = self.form.body2_2B4P.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_J_Index == -1:
             self.jointTaskObject.body_J_Name = ""
             self.jointTaskObject.body_J_Label = ""
             updateToolTipF(self.form.body2_2B4P, ['Undefined'])
-            initComboInFormF(self.form.vector2Head_2B4P, ['Undefined'], -1)
-            updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
-            initComboInFormF(self.form.vector2Tail_2B4P, ['Undefined'], -1)
-            updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
-        else:
-            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_J_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_J_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.body2_2B4P, self.pointLabelListSecondBody)
-            initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
-            updateToolTipF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody)
             initComboInFormF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody, -1)
+            updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
+            initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
+            updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
+
+        # else:
+        #     self.pointNameListSecondBody, self.pointLabelListSecondBody = \
+        #         DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+        #     self.jointTaskObject.body_J_Name = self.bodyNames[newBodyIndex]
+        #     self.jointTaskObject.body_J_Label = self.bodyLabels[newBodyIndex]
+        #     updateToolTipF(self.form.body2_2B4P, self.pointLabelListSecondBody)
+        #     initComboInFormF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody, -1)
+        #     updateToolTipF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody)
+        #     initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
+        #     updateToolTipF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody)
+
+        if newBodyIndex > -1:
+            self.pointNameListSecondBody, self.pointLabelListSecondBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_J_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_J_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.body2_2B4P, self.pointLabelListSecondBody)
+            if newBodyIndex == self.jointTaskObject.body_J_Index:
+                initComboInFormF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody, self.jointTaskObject.point_J_i_Index)
+                initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, self.jointTaskObject.point_J_j_Index)
+            else:
+                initComboInFormF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody, -1)
+                initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
             updateToolTipF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody)
+            updateToolTipF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody)
+            self.jointTaskObject.body_J_Index = newBodyIndex
+
+        if self.jointTaskObject.body_J_Index > -1:
+            self.form.body2_2B4P.setCurrentIndex(self.jointTaskObject.body_J_Index + 1)
+
     #  -------------------------------------------------------------------------
     def vector1Tail_2B4P_Changed_Callback(self):
         if Debug:
@@ -903,7 +1174,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vector1Tail_2B4P.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
@@ -918,7 +1189,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vector1Head_2B4P.currentIndex() - 1
         self.jointTaskObject.point_I_j_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_j_Name = ""
             self.jointTaskObject.point_I_j_Label = ""
             updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
@@ -933,7 +1204,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vector2Tail_2B4P.currentIndex() - 1
         self.jointTaskObject.point_J_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_J_i_Name = ""
             self.jointTaskObject.point_J_i_Label = ""
             updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
@@ -948,7 +1219,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.vector2Head_2B4P.currentIndex() - 1
         self.jointTaskObject.point_J_j_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_J_j_Name = ""
             self.jointTaskObject.point_J_j_Label = ""
             updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
@@ -962,26 +1233,57 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-bodyDisc_Changed_Callback")
 
-        bodyIndex = self.form.bodyDisc.currentIndex() - 1
-        self.jointTaskObject.body_I_Index = bodyIndex
-        if bodyIndex == -1:
+        # bodyIndex = self.form.bodyDisc.currentIndex() - 1
+        # self.jointTaskObject.body_I_Index = bodyIndex
+        # if bodyIndex == -1:
+        #     self.jointTaskObject.body_I_Name = ""
+        #     self.jointTaskObject.body_I_Label = ""
+        #     updateToolTipF(self.form.bodyDisc, ['Undefined'])
+        #     initComboInFormF(self.form.pointDiscCentre, ['Undefined'], -1)
+        #     updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
+        #     initComboInFormF(self.form.pointDiscRim, ['Undefined'], -1)
+        #     updateToolTipF(self.form.pointDiscRim, ['Undefined'])
+
+        newBodyIndex = self.form.bodyDisc.currentIndex() - 1
+        if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
             self.jointTaskObject.body_I_Label = ""
             updateToolTipF(self.form.bodyDisc, ['Undefined'])
-            initComboInFormF(self.form.pointDiscCentre, ['Undefined'], -1)
-            updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
-            initComboInFormF(self.form.pointDiscRim, ['Undefined'], -1)
-            updateToolTipF(self.form.pointDiscRim, ['Undefined'])
-        else:
-            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-                DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-            self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-            self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-            updateToolTipF(self.form.bodyDisc, self.pointLabelListFirstBody)
             initComboInFormF(self.form.pointDiscCentre, self.pointLabelListFirstBody, -1)
-            updateToolTipF(self.form.pointDiscCentre, self.pointLabelListFirstBody)
+            updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
             initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.pointDiscRim, ['Undefined'])
+
+        # else:
+        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
+        #     self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
+        #     self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
+        #     updateToolTipF(self.form.bodyDisc, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.pointDiscCentre, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.pointDiscCentre, self.pointLabelListFirstBody)
+        #     initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, -1)
+        #     updateToolTipF(self.form.pointDiscRim, self.pointLabelListFirstBody)
+
+        if newBodyIndex > -1:
+            self.pointNameListFirstBody, self.pointLabelListFirstBody = \
+                DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
+            self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
+            self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
+            updateToolTipF(self.form.bodyDisc, self.pointLabelListFirstBody)
+            if newBodyIndex == self.jointTaskObject.body_I_Index:
+                initComboInFormF(self.form.pointDiscCentre, self.pointLabelListFirstBody, self.jointTaskObject.point_I_i_Index)
+                initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, self.jointTaskObject.point_I_j_Index)
+            else:
+                initComboInFormF(self.form.pointDiscCentre, self.pointLabelListFirstBody, -1)
+                initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, -1)
+            updateToolTipF(self.form.pointDiscCentre, self.pointLabelListFirstBody)
             updateToolTipF(self.form.pointDiscRim, self.pointLabelListFirstBody)
+            self.jointTaskObject.body_I_Index = newBodyIndex
+        # else:
+        if self.jointTaskObject.body_I_Index > -1:
+            self.form.bodyDisc.setCurrentIndex(self.jointTaskObject.body_I_Index + 1)
+
     #  -------------------------------------------------------------------------
     def pointDiscCentre_Changed_Callback(self):
         if Debug:
@@ -989,7 +1291,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.pointDiscCentre.currentIndex() - 1
         self.jointTaskObject.point_I_i_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_i_Name = ""
             self.jointTaskObject.point_I_i_Label = ""
             updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
@@ -1004,7 +1306,7 @@ class TaskPanelDapJointClass:
 
         pointIndex = self.form.pointDiscRim.currentIndex() - 1
         self.jointTaskObject.point_I_j_Index = pointIndex
-        if pointIndex == -1:
+        if pointIndex < 0:
             self.jointTaskObject.point_I_j_Name = ""
             self.jointTaskObject.point_I_j_Label = ""
             updateToolTipF(self.form.pointDiscRim, ['Undefined'])
@@ -1015,37 +1317,47 @@ class TaskPanelDapJointClass:
     #  -------------------------------------------------------------------------
     def radioA_Changed_Callback(self):
         if self.form.radioButtonA.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(0)
-            self.jointTaskObject.FunctType = 0
+
+            if self.jointTaskObject.FunctType == 0:
+                self.form.FuncACoeff0.setValue(self.jointTaskObject.Coeff0)
+                self.form.FuncACoeff1.setValue(self.jointTaskObject.Coeff1)
+                self.form.FuncACoeff2.setValue(self.jointTaskObject.Coeff2)
+                self.form.FuncAstartTime.setValue(self.jointTaskObject.startTimeDriveFunc)
+                self.form.FuncAendTime.setValue(self.jointTaskObject.endTimeDriveFunc)
+            else:
+                # Transfer zero parms into form
+                self.form.FuncACoeff0.setValue(0)
+                self.form.FuncACoeff1.setValue(0)
+                self.form.FuncACoeff2.setValue(0)
+                self.form.FuncAstartTime.setValue(0)
+                self.form.FuncAendTime.setValue(0)
+
+                self.jointTaskObject.FunctType = 0
+
     #  -------------------------------------------------------------------------
     def radioB_Changed_Callback(self):
         if self.form.radioButtonB.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(1)
             self.jointTaskObject.FunctType = 1
     #  -------------------------------------------------------------------------
     def radioC_Changed_Callback(self):
         if self.form.radioButtonC.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(2)
             self.jointTaskObject.FunctType = 2
     #  -------------------------------------------------------------------------
     def radioD_Changed_Callback(self):
         if self.form.radioButtonD.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(3)
             self.jointTaskObject.FunctType = 3
     #  -------------------------------------------------------------------------
     def radioE_Changed_Callback(self):
         if self.form.radioButtonE.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(4)
             self.jointTaskObject.FunctType = 4
     #  -------------------------------------------------------------------------
     def radioF_Changed_Callback(self):
         if self.form.radioButtonF.isChecked():
-            self.showAllEquationsF()
             self.form.funcCoeff.setCurrentIndex(5)
             self.jointTaskObject.FunctType = 5
     #  -------------------------------------------------------------------------

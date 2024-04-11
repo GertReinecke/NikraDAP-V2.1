@@ -85,7 +85,7 @@
     <enum>QFrame::Panel</enum>
    </property>
    <property name="currentIndex">
-    <number>6</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="RevPage">
     <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -699,7 +699,7 @@
     <enum>QFrame::Raised</enum>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="pageTypeFunctionA">
     <widget class="QDoubleSpinBox" name="FuncAendTime">
@@ -2163,29 +2163,29 @@ p, li { white-space: pre-wrap; }
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QCheckBox" name="withDriver">
+  <widget class="QCheckBox" name="withRotationDriver">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>290</y>
-     <width>301</width>
+     <width>321</width>
      <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>Do you wish to drive this joint with a function?</string>
+    <string>Do you wish to drive the ROTATION with a function?</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>320</y>
      <width>307</width>
-     <height>17</height>
+     <height>25</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="allRadioButtons">
@@ -2232,6 +2232,22 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QCheckBox" name="withTranslationDriver">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>290</y>
+     <width>321</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Do you wish to drive the TRANSLATION with a function?</string>
+   </property>
   </widget>
  </widget>
  <resources/>

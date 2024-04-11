@@ -199,10 +199,10 @@ class DapMainC:
             1: self.Translational_Acc,
             2: self.Revolute_Revolute_Acc,
             3: self.Translational_Revolute_Acc,
-            # 4: self.Driven_Revolute_Acc,
-            # 5: self.Driven_Translational_Acc,
             4: self.Rigid_Acc,
-            5: self.Disc_Acc
+            5: self.Disc_Acc,
+            6: self.Driven_Revolute_Acc,
+            7: self.Driven_Translational_Acc,
         }
         # Dictionary of the pointers for Dynamic calling of the constraint functions
         self.dictconstraintFunctions = {
@@ -210,10 +210,10 @@ class DapMainC:
             1: self.Translational_constraint,
             2: self.Revolute_Revolute_constraint,
             3: self.Translational_Revolute_constraint,
-            #4: self.Driven_Revolute_constraint,
-            #5: self.Driven_Translational_constraint,
             4: self.Rigid_constraint,
             5: self.Disc_constraint,
+            6: self.Driven_Revolute_constraint,
+            7: self.Driven_Translational_constraint,
         }
         # Dictionary of the pointers for Dynamic calling of the Jacobian functions
         self.dictJacobianFunctions = {
@@ -221,10 +221,10 @@ class DapMainC:
             1: self.Translational_Jacobian,
             2: self.Revolute_Revolute_Jacobian,
             3: self.Translational_Revolute_Jacobian,
-            #4: self.Driven_Revolute_Jacobian,
-            #5: self.Driven_Translational_Jacobian,
             4: self.Rigid_Jacobian,
             5: self.Disc_Jacobian,
+            6: self.Driven_Revolute_Jacobian,
+            7: self.Driven_Translational_Jacobian,
         }
 
         # Convert joint object Dictionary to Joint Object List to ensure being ordered
@@ -507,17 +507,27 @@ class DapMainC:
                 #                end
                 #            end
                 # ==================================
-                jointObj.mConstraints = 2
-                jointObj.nMovBodies = 2
-                if jointObj.fixDof is True:
-                    jointObj.mConstraints = 3
-                    # Set the initial angle phi0 and handle the case where one is attached to ground
-                    if jointObj.body_I_Index == 0:
-                        jointObj.phi0 = -self.phiNp[jointObj.body_J_Index]
-                    elif jointObj.body_J_Index == 0:
-                        jointObj.phi0 = self.phiNp[jointObj.body_I_Index]
-                    else:
-                        jointObj.phi0 = self.phiNp[jointObj.body_I_Index] - self.phiNp[jointObj.body_J_Index]
+                if jointObj.FunctType == -1:
+                    jointObj.mConstraints = 2
+                    jointObj.nMovBodies = 2
+                    if jointObj.fixDof is True:
+                        jointObj.mConstraints = 3
+                        # Set the initial angle phi0 and handle the case where one is attached to ground
+                        if jointObj.body_I_Index == 0:
+                            jointObj.phi0 = -self.phiNp[jointObj.body_J_Index]
+                        elif jointObj.body_J_Index == 0:
+                            jointObj.phi0 = self.phiNp[jointObj.body_I_Index]
+                        else:
+                            jointObj.phi0 = self.phiNp[jointObj.body_I_Index] - self.phiNp[jointObj.body_J_Index]
+                else:
+                    # ==================================
+                    # Matlab Code from Nikravesh: DAP_BC
+                    # ==================================
+                    #        case {'rel-rot'}                                       % revised August 2022
+                    #            Joints(Ji).mrows = 1; Joints(Ji).nbody = 1;        % revised August 2022
+                    # ==================================
+                    jointObj.mConstraints = 1
+                    jointObj.nMovBodies = 1
 
             elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
                 # ==================================
@@ -593,16 +603,7 @@ class DapMainC:
                 # ==================================
                 jointObj.mConstraints = 1
                 jointObj.nMovBodies = 2
-            #elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'rel-rot'}                                       % revised August 2022
-                #            Joints(Ji).mrows = 1; Joints(Ji).nbody = 1;        % revised August 2022
-                # ==================================
-                #jointObj.mConstraints = 1
-                #jointObj.nMovBodies = 1
-            #elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
+            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
                 # ==================================
@@ -612,8 +613,8 @@ class DapMainC:
                 #            Bi = Points(Pi).Bindex; Joints(Ji).iBindex = Bi;   % revised August 2022
                 #            Bj = Points(Pj).Bindex; Joints(Ji).jBindex = Bj;   % revised August 2022
                 # ==================================
-                #jointObj.mConstraints = 1
-                #jointObj.nMovBodies = 1
+                jointObj.mConstraints = 1
+                jointObj.nMovBodies = 1
             elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
@@ -1070,8 +1071,12 @@ class DapMainC:
         
         # Call the applicable function which is pointed to by the constraint function dictionary
         for jointObj in self.jointObjList:
+            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
+                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             constraintNp = self.dictconstraintFunctions[jointObj.JointType](jointObj, tick)
             DeltaconstraintNp[jointObj.rowStart: jointObj.rowEnd] = constraintNp
+
+
         return DeltaconstraintNp
     #  =========================================================================
     def GetJacobianF(self):
@@ -1081,6 +1086,8 @@ class DapMainC:
         Jacobian = np.zeros((self.numConstraints, self.numMovBodiesx3,))
         for jointObj in self.jointObjList:
             # Call the applicable function which is pointed to by the Jacobian dictionary
+            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
+                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             JacobianHead, JacobianTail = self.dictJacobianFunctions[jointObj.JointType](jointObj)
             # Fill in the values in the Jacobian
             if jointObj.body_I_Index != 0:
@@ -1129,6 +1136,8 @@ class DapMainC:
         rhsAcc = np.zeros((self.numConstraints,), dtype=np.float64)
         # Call the applicable function which is pointed to by the Acceleration function dictionary
         for jointObj in self.jointObjList:
+            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
+                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             gamma = self.dictAccelerationFunctions[jointObj.JointType](jointObj, tick)
             rhsAcc[jointObj.rowStart: jointObj.rowEnd] = gamma
         return rhsAcc
@@ -1156,7 +1165,8 @@ class DapMainC:
         # Call the applicable Driven-Revolute or Driven-Translation function where applicable
         rhsVelNp = np.zeros((self.numConstraints,), dtype=np.float64)
         for jointObj in self.jointObjList:
-            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']:
+            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
+                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Rotation']
                 [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
                 rhsVelNp[jointObj.rowStart: jointObj.rowEnd] = func * funcDot
             elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Driven-Translation']:

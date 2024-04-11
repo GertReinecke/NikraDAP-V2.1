@@ -116,7 +116,7 @@ class DapWorkbench21C(Workbench):
         self.appendToolbar("NikraDAP Commands", self.MakeCommandList())
 
         # Create a drop-down menu item for the menu bar
-        self.appendMenu("NikraDAP-2.1Beta", self.MakeCommandList())
+        self.appendMenu("NikraDAP-2.1", self.MakeCommandList())
     #  -------------------------------------------------------------------------
     def ContextMenu(self, recipient):
         """This is executed whenever the user right-clicks on screen

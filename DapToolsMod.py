@@ -80,6 +80,8 @@ JOINT_TYPE_DICTIONARY = {"Revolute": 0,
                          "Translation-Revolute": 3,
                          "Rigid": 4,
                          "Disc": 5,
+                         "Driven-Revolute": 6,
+                         "Driven-Translation": 7,
                          }
 # These options are included in the code,
 # but limited until each has been more thoroughly tested
@@ -498,8 +500,11 @@ def computeCoGAndMomentInertia(bodyObj):
         # MatrixOfInertia[MoI] around an axis through the CoG of the Placed assemblyObj
         # and normal to the MovePlaneNormal
         MoIVec = assemblyObj.Shape.MatrixOfInertia.multVec(MovePlaneNormal)
-        MoIVecLength = MoIVec.Length * 1e-6
-        solidMoIThroughCoGNormalToMovePlaneList.append(MoIVecLength * mass)
+        # MoIVecLength = MoIVec.Length * 1e-6
+        MoIVecLength = MoIVec.Length
+        # solidMoIThroughCoGNormalToMovePlaneList.append(MoIVecLength * mass)
+        # MoI calculated in [kg*mm^2]
+        solidMoIThroughCoGNormalToMovePlaneList.append(MoIVecLength * density)
 
         totalBodyMass += mass
         CoGWholeBody += mass * solidCentreOfGravityXYPlaneList[-1]
