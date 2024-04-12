@@ -1,5 +1,5 @@
 # NikraDAP: A Multibody Planar Dynamics Workbench for FreeCAD
-# Version 2.0-alpha (soon to be superseded - with version 2.1)
+# Version 2.0-alpha (soon to be superseded - with version 2.1 - 12/04/2024)
 
 ## A second header
 
