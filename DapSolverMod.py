@@ -118,16 +118,17 @@ class CommandDapSolverClass:
         DT.getActiveContainerObject().addObject(makeDapSolver())
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapSolverClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__dump__")
+            DT.Mess("TaskPanelDapSolverClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class DapSolverClass:
     if Debug:
@@ -158,16 +159,17 @@ class DapSolverClass:
         DT.addObjectProperty(solverObject, "BodyNames",       [],    "App::PropertyStringList", "", "")
         DT.addObjectProperty(solverObject, "BodyCoG",         [],    "App::PropertyVectorList", "", "")
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("DapSolverClass-__load__")
-        return self.Type
+            DT.Mess("DapSolverClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("DapSolverClass-__dump__")
+            DT.Mess("DapSolverClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class ViewProviderDapSolverClass:
     if Debug:
@@ -231,16 +233,17 @@ class ViewProviderDapSolverClass:
             DT.Mess("ViewProviderDapSolverClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("ViewProviderDapSolverClass-__load__")
-        return self.Type
+            DT.Mess("ViewProviderDapSolverClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapSolverClass-__dump__")
+            DT.Mess("ViewProviderDapSolverClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class TaskPanelDapSolverClass:
     """Taskpanel for Executing DAP Solver User Interface"""
@@ -374,14 +377,15 @@ class TaskPanelDapSolverClass:
             DT.Mess("TaskPanelDapSolverClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapSolverClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapSolverClass-__dump__")
+            DT.Mess("TaskPanelDapSolverClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================

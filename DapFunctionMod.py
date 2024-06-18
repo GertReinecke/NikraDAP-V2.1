@@ -480,14 +480,15 @@ class FunctionC:
 
         return [func_t, d_func_dt, d2_func_dt2]
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapFunctionClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapFunctionClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapFunctionClass-__dump__")
+            DT.Mess("TaskPanelDapFunctionClass-loads")
         if state:
             self.Type = state
+        return None
 # ==============================================================================

@@ -182,7 +182,10 @@ class DapMainC:
         # Store the required accuracy figures
         self.relativeTolerance = 10**(-Accuracy-2)
         self.absoluteTolerance = 10**(-Accuracy-4)
-        
+
+        print("self.relativeTolerance", self.relativeTolerance)
+        print("self.absoluteTolerance", self.absoluteTolerance)
+
         # Counter of function evaluations
         self.Counter = 0
 
@@ -352,7 +355,7 @@ class DapMainC:
         # Next bodyIndex
 
         # Print out what we have calculated for debugging
-        if Debug:
+        if True:
             DT.Mess("Point Dictionary: ")
             for bodyIndex in range(self.numBodies):
                 DT.Mess(self.pointDictList[bodyIndex])
@@ -702,7 +705,7 @@ class DapMainC:
 
         # Determine any redundancy between constraints
         Jacobian = self.GetJacobianF()
-        if Debug:
+        if True:
             DT.Mess("Jacobian calculated to determine rank of solution")
             DT.Np2D(Jacobian)
         redundant = np.linalg.matrix_rank(Jacobian)
@@ -723,7 +726,7 @@ class DapMainC:
         # RHSVel = [0,0,...]   (i.e. a list of zeros)
         solution = np.linalg.solve(Jacobian @ Jacobian.T, (Jacobian @ velCorrArrayNp) - self.RHSVel(0))
         deltaVel = -Jacobian.T @ solution
-        if Debug:
+        if True:
             DT.MessNoLF("Velocity Correction Array: ")
             DT.Np1D(True, velCorrArrayNp)
             DT.MessNoLF("Velocity Correction Solution: ")
@@ -916,6 +919,7 @@ class DapMainC:
             if Debug:
                 DT.MessNoLF("Accelerations: ")
                 DT.Np1D(True, accel)
+            if True:
                 DT.MessNoLF("Lambda: ")
                 DT.Np1D(True, self.Lambda)
 
@@ -2432,14 +2436,15 @@ class DapMainC:
 
         self.forceArrayNp = np.zeros((self.numMovBodiesx3,), dtype=np.float64)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapMainClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapMainClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapMainClass-__dump__")
+            DT.Mess("TaskPanelDapMainClass-loads")
         if state:
             self.Type = state
+        return None
     #  =========================================================================

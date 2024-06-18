@@ -111,16 +111,17 @@ class CommandDapForceClass:
         # Switch on the Dap Force Task Dialog
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapForceClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapForceClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapForceClass-__dump__")
+            DT.Mess("TaskPanelDapForceClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class DapForceClass:
     if Debug:
@@ -169,16 +170,17 @@ class DapForceClass:
         DT.addObjectProperty(forceObject, "constWorldForce",      CAD.Vector(), "App::PropertyVector",  "Values",     "Constant force in x-y frame")
         DT.addObjectProperty(forceObject, "constTorque",          0.0,          "App::PropertyFloat",   "Values",     "Constant torque in x-y frame")
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("DapForceClass-__load__")
-        return self.Type
+            DT.Mess("DapForceClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("DapForceClass-__dump__")
+            DT.Mess("DapForceClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class ViewProviderDapForceClass:
     if Debug:
@@ -242,16 +244,17 @@ class ViewProviderDapForceClass:
             DT.Mess("ViewProviderDapForceClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("ViewProviderDapForceClass-__load__")
-        return self.Type
+            DT.Mess("ViewProviderDapForceClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapForceClass-__dump__")
+            DT.Mess("ViewProviderDapForceClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class TaskPanelDapForceClass:
     """Taskpanel for adding a NikraDAP Force"""
@@ -768,16 +771,17 @@ class TaskPanelDapForceClass:
             DT.Mess("TaskPanelDapForceClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapForceClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapForceClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapForceClass-__dump__")
+            DT.Mess("TaskPanelDapForceClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
     def archiveUnusedForceCode(self):
         """

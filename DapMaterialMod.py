@@ -109,16 +109,17 @@ class CommandDapMaterialClass:
         # Switch on the Dap Material Task Panel
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapBodyClass-__load__\n")
-        return self.Type
+            CAD.Console.PrintMessage("TaskPanelDapBodyClass-dumps\n")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapBodyClass-__dump__\n")
+            CAD.Console.PrintMessage("TaskPanelDapBodyClass-loads\n")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class DapMaterialClass:
     """Defines the DAP material class"""
@@ -147,16 +148,17 @@ class DapMaterialClass:
         DT.addObjectProperty(materialObject, "materialsDensityList", [],   "App::PropertyFloatList",  "", "List of matching Density values")
         DT.addObjectProperty(materialObject, "kgm3ORgcm3",           True, "App::PropertyBool",       "", "Density units in the Dialog - kg/m^3 or g/cm^3")
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-__load__\n")
-        return self.Type
+            CAD.Console.PrintMessage("DapMaterialClass-dumps\n")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-__dump__\n")
+            CAD.Console.PrintMessage("DapMaterialClass-loads\n")
         if state:
             self.Type = state
+        return None
     # --------------------------------------------------------------------------
     def __str__(self):
         return str(self.__dict__)
@@ -223,16 +225,17 @@ class ViewProviderDapMaterialClass:
             CAD.Console.PrintMessage("ViewProviderDapMaterialClass-unsetEdit\n")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-__load__\n")
-        return self.Type
+            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-dumps\n")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-__dump__\n")
+            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-loads\n")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class TaskPanelDapMaterialClass:
     """Task panel for adding a Material for each solid Part"""
@@ -486,14 +489,15 @@ class TaskPanelDapMaterialClass:
             CAD.Console.PrintMessage("TaskPanelDapAnimateClass-getStandardButtons\n")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-__load__\n")
-        return self.Type
+            CAD.Console.PrintMessage("DapMaterialClass-dumps\n")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-__dump__\n")
+            CAD.Console.PrintMessage("DapMaterialClass-loads\n")
         if state:
             self.Type = state
+        return None
 # =============================================================================

@@ -120,16 +120,17 @@ class CommandDapContainerClass:
         if DT.setActiveContainer(makeDapContainer()) is False:
             CAD.Console.PrintError("Failed to create DAP container")
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapContainerClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__dump__")
+            DT.Mess("TaskPanelDapContainerClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class DapContainerClass:
     """The Dap analysis container class"""
@@ -160,16 +161,17 @@ class DapContainerClass:
 
         DT.setActiveContainer(containerObject)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("DapContainerClass-__load__")
-        return self.Type
+            DT.Mess("DapContainerClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("DapContainerClass-__dump__")
+            DT.Mess("DapContainerClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class ViewProviderDapContainerClass:
     """A view provider for the DapContainer container object"""
@@ -197,14 +199,15 @@ class ViewProviderDapContainerClass:
     def updateData(self, obj, prop):
         return
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapContainerClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-__dump__")
+            DT.Mess("TaskPanelDapContainerClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================

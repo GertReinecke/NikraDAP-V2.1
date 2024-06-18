@@ -110,16 +110,17 @@ class CommandDapBodyClass:
         # Switch on the Dap Body Task Dialog
         CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("CommandDapBody-__load__")
-        return self.Type
+            DT.Mess("CommandDapBody-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("CommandDapBodyClass-__dump__")
+            DT.Mess("CommandDapBodyClass-loads")
         if state:
             self.Type = state
+        return None
 # ==============================================================================
 class DapBodyClass:
     if Debug:
@@ -160,16 +161,17 @@ class DapBodyClass:
         DT.addObjectProperty(bodyObject, "pointLabels",      [],              "App::PropertyStringList", "Points",    "List of Point labels associated with this body")
         DT.addObjectProperty(bodyObject, "pointLocals",      [],              "App::PropertyVectorList", "Points",    "Vectors relative to local LCS")
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("DapBodyClass-__load__")
-        return self.Type
+            DT.Mess("DapBodyClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("DapBodyClass-__dump__")
+            DT.Mess("DapBodyClass-loads")
         if state:
             self.Type = state
+        return None
 # ==============================================================================
 class ViewProviderDapBodyClass:
     """A class which handles all the gui overheads"""
@@ -234,16 +236,17 @@ class ViewProviderDapBodyClass:
             DT.Mess("ViewProviderDapBodyClass-unsetEdit")
         CADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("ViewProviderDapBodyClass-__load__")
-        return self.Type
+            DT.Mess("ViewProviderDapBodyClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("ViewProviderDapBodyClass-__dump__")
+            DT.Mess("ViewProviderDapBodyClass-loads")
         if state:
             self.Type = state
+        return None
 # ==============================================================================
 class TaskPanelDapBodyClass:
     """Task panel for adding and editing DAP Bodies"""
@@ -774,14 +777,15 @@ class TaskPanelDapBodyClass:
             DT.Mess("TaskPanelDapBodyClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapBodyClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapBodyClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapBodyClass-__dump__")
+            DT.Mess("TaskPanelDapBodyClass-loads")
         if state:
             self.Type = state
+        return None
 # ==============================================================================

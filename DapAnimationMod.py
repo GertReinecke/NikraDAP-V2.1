@@ -141,16 +141,17 @@ class CommandDapAnimationClass:
         )
         CADGui.Control.showDialog(taskd)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("CommandDapAnimClass-__load__")
-        return self.Type
+            DT.Mess("CommandDapAnimClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("CommandDapAnimClass-__dump__")
+            DT.Mess("CommandDapAnimClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class ViewProviderDapAnimateClass:
     """ A view provider for the DapAnimate container object """
@@ -186,12 +187,13 @@ class ViewProviderDapAnimateClass:
     def updateData(self, obj, prop):
         return
     # -------------------------------------------------------------------------------------------------
-    def __load__(self):
-        return self.Type
+    def dumps(self):
+        return None
     # -------------------------------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if state:
             self.Type = state
+        return None
 # =============================================================================
 class TaskPanelDapAnimateClass:
     """Taskpanel for Running an animation"""
@@ -340,14 +342,15 @@ class TaskPanelDapAnimateClass:
             DT.Mess("TaskPanelDapAnimateClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Close)
     #  -------------------------------------------------------------------------
-    def __load__(self):
+    def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapAnimationClass-__load__")
-        return self.Type
+            DT.Mess("TaskPanelDapAnimationClass-dumps")
+        return None
     #  -------------------------------------------------------------------------
-    def __dump__(self, state):
+    def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapAnimationClass-__dump__")
+            DT.Mess("TaskPanelDapAnimationClass-loads")
         if state:
             self.Type = state
+        return None
 # =============================================================================
