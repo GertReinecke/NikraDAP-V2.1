@@ -1,67 +1,7 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 from os import path, getcwd
-from math import sin, cos, tan, asin, acos, atan2, pi
-import Part
-import time
 from PySide import QtGui, QtCore
 from pivy import coin
 
@@ -74,7 +14,7 @@ def makeDapSolver(name="DapSolver"):
     """Create a Dap Solver object"""
     if Debug:
         DT.Mess("makeDapSolver")
-    solverObject = CAD.ActiveDocument.addObject("Part::FeaturePython", name)
+    solverObject = FreeCAD.ActiveDocument.addObject("Part::FeaturePython", name)
     # Instantiate a DapSolver object
     DapSolverClass(solverObject)
     # Instantiate the class to handle the Gui stuff
@@ -92,7 +32,7 @@ class CommandDapSolverClass:
         if Debug:
             DT.Mess("CommandDapSolverClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "icons", "Icon7n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon7n.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("Dap_Solver_alias", "Run the analysis"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("Dap_Solver_alias", "Run the analysis."),
         }
@@ -112,11 +52,11 @@ class CommandDapSolverClass:
         for groupMember in activeContainer.Group:
             if "DapSolver" in groupMember.Name:
                 solverObject = groupMember
-                CADGui.ActiveDocument.setEdit(solverObject.Name)
+                FreeCADGui.ActiveDocument.setEdit(solverObject.Name)
                 return
         # Otherwise create a new solver object
         DT.getActiveContainerObject().addObject(makeDapSolver())
-        CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
+        FreeCADGui.ActiveDocument.setEdit(FreeCAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -184,7 +124,7 @@ class ViewProviderDapSolverClass:
         """Open up the TaskPanel if it is not open"""
         if Debug:
             DT.Mess("ViewProviderDapSolverClass-doubleClicked")
-        Document = CADGui.getDocument(solverViewObject.Object.Document)
+        Document = FreeCADGui.getDocument(solverViewObject.Object.Document)
         if not Document.getInEdit():
             Document.setEdit(solverViewObject.Object.Name)
         return True
@@ -193,7 +133,7 @@ class ViewProviderDapSolverClass:
         """Returns the full path to the solver icon (Icon7n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapSolverClass-getIcon")
-        return path.join(DT.getDapModulePath(), "icons", "Icon7n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "Icon7n.png")
     #  -------------------------------------------------------------------------
     def attach(self, solverViewObject):
         if Debug:
@@ -224,14 +164,14 @@ class ViewProviderDapSolverClass:
         """Edit the parameters by switching on the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapSolverClass-setEdit")
-        CADGui.Control.showDialog(TaskPanelDapSolverClass(self.solverObject))
+        FreeCADGui.Control.showDialog(TaskPanelDapSolverClass(self.solverObject))
         return True
     #  -------------------------------------------------------------------------
     def unsetEdit(self, viewobj, mode):
         """Shut down the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapSolverClass-unsetEdit")
-        CADGui.Control.closeDialog()
+        FreeCADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -264,7 +204,7 @@ class TaskPanelDapSolverClass:
 
         # Load the taskDialog form information
         ui_path = path.join(path.dirname(__file__), "TaskPanelDapSolver.ui")
-        self.form = CADGui.PySideUic.loadUi(ui_path)
+        self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Set up actions on the solver button and fileDirectory browser
         self.form.solveButton.clicked.connect(self.solveButtonClicked_Callback)
@@ -295,12 +235,12 @@ class TaskPanelDapSolverClass:
             DT.Mess("TaskPanelDapSolverClass-accept")
 
         # Close the dialog
-        Document = CADGui.getDocument(self.solverTaskObject.Document)
+        Document = FreeCADGui.getDocument(self.solverTaskObject.Document)
         Document.resetEdit()
 
         #  Recompute document to update view provider based on the shapes
         solverDocName = str(self.solverTaskObject.Document.Name)
-        CAD.getDocument(solverDocName).recompute()
+        FreeCAD.getDocument(solverDocName).recompute()
     #  -------------------------------------------------------------------------
     def outputAnimOnlyCheckboxChanged_Callback(self):
         if self.form.outputAnimOnly.isChecked():

@@ -1,61 +1,4 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
+import FreeCAD
 
 import Part
 from os import path
@@ -67,21 +10,9 @@ Debug = False
 # These are the string constants used in various places throughout the code
 # These options are included in the code,
 # but limited until each has been more thoroughly tested
-JOINT_TYPE = ["Revolute",
-              "Translation",
-              "Revolute-Revolute",
-              "Translation-Revolute",
-              "Rigid",
-              "Disc",
+JOINT_TYPE = ["Revolute"
               ]
-JOINT_TYPE_DICTIONARY = {"Revolute": 0,
-                         "Translation": 1,
-                         "Revolute-Revolute": 2,
-                         "Translation-Revolute": 3,
-                         "Rigid": 4,
-                         "Disc": 5,
-                         "Driven-Revolute": 6,
-                         "Driven-Translation": 7,
+JOINT_TYPE_DICTIONARY = {"Revolute": 0
                          }
 # These options are included in the code,
 # but limited until each has been more thoroughly tested
@@ -194,7 +125,7 @@ def getActiveContainerObject():
         Mess("DapTools-getActiveContainerObject")
     # The module must be imported here for "isinstance" to work below
     from DapContainerMod import DapContainerClass
-    for container in CAD.ActiveDocument.Objects:
+    for container in FreeCAD.ActiveDocument.Objects:
         if hasattr(container, "Proxy") and isinstance(container.Proxy, DapContainerClass):
             if container.activeContainer is True:
                 return container
@@ -208,7 +139,7 @@ def setActiveContainer(containerObj):
     # The module must be imported here for "isinstance" to work below
     from DapContainerMod import DapContainerClass
     Found = False
-    for container in CAD.ActiveDocument.Objects:
+    for container in FreeCAD.ActiveDocument.Objects:
         if hasattr(container, "Proxy") and isinstance(container.Proxy, DapContainerClass):
             if container == containerObj:
                 containerObj.activeContainer = True
@@ -314,7 +245,7 @@ def condensePoints(pointNames, pointLabels, pointLocals):
             MessNoLF("Point Local Vector:")
             PrintVec(pointLocals[index])
             MessNoLF("Point World Vector:")
-            PrintVec(CAD.Vector(BodyPlacementMatrix.multVec(pointLocals[index])))
+            PrintVec(FreeCAD.Vector(BodyPlacementMatrix.multVec(pointLocals[index])))
             Mess("")
 #  -------------------------------------------------------------------------
 def parsePoint(pointString):
@@ -379,7 +310,7 @@ def getAllSolidsLists():
     allSolidsObjects = []
 
     # Run through all the whole document's objects, looking for the Solids
-    objects = CAD.ActiveDocument.Objects
+    objects = FreeCAD.ActiveDocument.Objects
     for obj in objects:
         if hasattr(obj, "Type") and obj.Type == 'Assembly':
             if Debug:
@@ -398,7 +329,7 @@ def getAllSolidsLists():
            hasattr(groupMember, 'AttachedBy') and \
            hasattr(groupMember, 'Shape'):
             if "^"+groupMember.Name+"$" in allSolidsNames:
-                CAD.Console.PrintError("Duplicate Shape Name found: " + groupMember.Name + "\n")
+                FreeCAD.Console.PrintError("Duplicate Shape Name found: " + groupMember.Name + "\n")
 
             allSolidsNames.append(groupMember.Name)
             allSolidsLabels.append(groupMember.Label)
@@ -461,11 +392,11 @@ def computeCoGAndMomentInertia(bodyObj):
 
     # Determine the vectors and matrices to convert movement in the selected base plane to the X-Y plane
     MovePlaneNormal = getActiveContainerObject().movementPlaneNormal
-    xyzToXYRotation = CAD.Rotation(CAD.Vector(0, 0, 1), MovePlaneNormal)
+    xyzToXYRotation = FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), MovePlaneNormal)
 
     # Clear the variables and lists for filling
     totalBodyMass = 0
-    CoGWholeBody = CAD.Vector()
+    CoGWholeBody = FreeCAD.Vector()
     massList = []
     solidMoIThroughCoGNormalToMovePlaneList = []
     solidCentreOfGravityXYPlaneList = []
@@ -543,22 +474,22 @@ def DrawRotArrow(Point, LeftRight, diameter):
     and then rotate it relative to the defined movement plane"""
     radiusRing = diameter
     thicknessRing = diameter / 5
-    torus_direction = CAD.Vector(0, 0, 1)
-    cone_direction = CAD.Vector(0, 1, 0)
+    torus_direction = FreeCAD.Vector(0, 0, 1)
+    cone_direction = FreeCAD.Vector(0, 1, 0)
 
     # Make either a left half or a right half of the torus
     if LeftRight:
-        torus = Part.makeTorus(radiusRing, thicknessRing, CAD.Vector(0, 0, radiusRing), torus_direction, -180, 180, 90)
-        cone_position = CAD.Vector(radiusRing, -5 * thicknessRing, radiusRing)
+        torus = Part.makeTorus(radiusRing, thicknessRing, FreeCAD.Vector(0, 0, radiusRing), torus_direction, -180, 180, 90)
+        cone_position = FreeCAD.Vector(radiusRing, -5 * thicknessRing, radiusRing)
         cone = Part.makeCone(0, 2 * thicknessRing, 5 * thicknessRing, cone_position, cone_direction)
     else:
-        torus = Part.makeTorus(radiusRing, thicknessRing, CAD.Vector(0, 0, radiusRing), -torus_direction, -180, 180, 90)
-        cone_position = CAD.Vector(-radiusRing, -5 * thicknessRing, radiusRing)
+        torus = Part.makeTorus(radiusRing, thicknessRing, FreeCAD.Vector(0, 0, radiusRing), -torus_direction, -180, 180, 90)
+        cone_position = FreeCAD.Vector(-radiusRing, -5 * thicknessRing, radiusRing)
         cone = Part.makeCone(0, 2 * thicknessRing, 5 * thicknessRing, cone_position, cone_direction)
     # Make a cone to act as an arrow on the end of the half torus
     torus_w_arrows = Part.makeCompound([torus, cone])
     # Rotate torus to be relative to the defined movement plane
-    rotationToMovementPlane = CAD.Rotation(CAD.Vector(0, 0, 1), getActiveContainerObject().movementPlaneNormal)
+    rotationToMovementPlane = FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), getActiveContainerObject().movementPlaneNormal)
     torus_w_arrows.applyRotation(rotationToMovementPlane)
     # Translate the torus to be located at the point
     torus_w_arrows.applyTranslation(Point)
@@ -569,8 +500,8 @@ def DrawRigidBolt(Point, diam, length):
     bolt = Part.makeCylinder(
         diam,
         length * 2,
-        Point - CAD.Vector(0, 0, length),
-        CAD.Vector(0, 0, 1)
+        Point - FreeCAD.Vector(0, 0, length),
+        FreeCAD.Vector(0, 0, 1)
     )
 
     # FORMAT OF MAKE WEDGE:
@@ -587,14 +518,14 @@ def DrawRigidBolt(Point, diam, length):
                           -length * 2 / 9, 0,
                           diam, 0, length * 2 / 9,
                           length * 2 / 9, 0)
-    nutb = nuta.copy().mirror(CAD.Vector(0, 0, 0), CAD.Vector(sin, cos, 0))
-    nutc = nuta.copy().mirror(CAD.Vector(0, 0, 0), CAD.Vector(sin, -cos, 0))
+    nutb = nuta.copy().mirror(FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(sin, cos, 0))
+    nutc = nuta.copy().mirror(FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(sin, -cos, 0))
     nutd = nuta.fuse([nutb, nutc])
-    nute = nutd.copy().mirror(CAD.Vector(0, 0, 0), CAD.Vector(0, 1, 0))
+    nute = nutd.copy().mirror(FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 1, 0))
     nutf = nutd.fuse([nute])
     nutg = nutf.copy()
-    nutf.translate(Point - CAD.Vector(0, 0, length * 0.7))
-    nutg.translate(Point + CAD.Vector(0, 0, length * 0.7))
+    nutf.translate(Point - FreeCAD.Vector(0, 0, length * 0.7))
+    nutg.translate(Point + FreeCAD.Vector(0, 0, length * 0.7))
 
     return bolt.fuse([nutf, nutg])
 #  -------------------------------------------------------------------------
@@ -681,7 +612,7 @@ def minMidMaxVec(Vector, minMidMax):
         middle:  if minMidMax == 2
         maximum: if minMidMax == 3
     """
-    Vec = CAD.Vector(Vector)
+    Vec = FreeCAD.Vector(Vector)
     Vec.x = abs(Vec.x)
     Vec.y = abs(Vec.y)
     Vec.z = abs(Vec.z)
@@ -742,13 +673,13 @@ def RotationMatrixNp(phi):
                      [math.sin(phi),  math.cos(phi)]])
 #  -------------------------------------------------------------------------
 def Mess(string):
-    CAD.Console.PrintMessage(str(string)+"\n")
+    FreeCAD.Console.PrintMessage(str(string)+"\n")
 #  -------------------------------------------------------------------------
 def MessNoLF(string):
-    CAD.Console.PrintMessage(str(string))
+    FreeCAD.Console.PrintMessage(str(string))
 #  -------------------------------------------------------------------------
 def PrintVec(vec):
-    CAD.Console.PrintMessage("[" + str(Round(vec.x)) + ":" + str(Round(vec.y)) + ":" + str(Round(vec.z)) + "]\n")
+    FreeCAD.Console.PrintMessage("[" + str(Round(vec.x)) + ":" + str(Round(vec.y)) + ":" + str(Round(vec.z)) + "]\n")
 #  -------------------------------------------------------------------------
 def Np3D(arr):
     for x in arr:
@@ -758,8 +689,8 @@ def Np3D(arr):
                 ss = str(Round(z))+"                 "
                 s = s + ss[:12]
             s = s + " ]"
-            CAD.Console.PrintMessage(s+"\n")
-        CAD.Console.PrintMessage("\n")
+            FreeCAD.Console.PrintMessage(s+"\n")
+        FreeCAD.Console.PrintMessage("\n")
 #  -------------------------------------------------------------------------
 def Np2D(arr):
     for x in arr:
@@ -768,7 +699,7 @@ def Np2D(arr):
             ss = str(Round(y))+"                 "
             s = s + ss[:12]
         s = s + " ]"
-        CAD.Console.PrintMessage(s+"\n")
+        FreeCAD.Console.PrintMessage(s+"\n")
 #  -------------------------------------------------------------------------
 def Np1D(LF, arr):
     s = "[ "
@@ -777,9 +708,9 @@ def Np1D(LF, arr):
         s = s + ss[:12]
     s = s + " ]"
     if LF:
-        CAD.Console.PrintMessage(s+"\n")
+        FreeCAD.Console.PrintMessage(s+"\n")
     else:
-        CAD.Console.PrintMessage(s+" ")
+        FreeCAD.Console.PrintMessage(s+" ")
 #  -------------------------------------------------------------------------
 def Np1Ddeg(LF, arr):
     s = "[ "
@@ -788,9 +719,9 @@ def Np1Ddeg(LF, arr):
         s = s + ss[:12]
     s = s + " ]"
     if LF:
-        CAD.Console.PrintMessage(s+"\n")
+        FreeCAD.Console.PrintMessage(s+"\n")
     else:
-        CAD.Console.PrintMessage(s+" ")
+        FreeCAD.Console.PrintMessage(s+" ")
 #  -------------------------------------------------------------------------
 def Round(num):
     if num >= 0.0:
@@ -803,13 +734,13 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
     solidNameAList = []
     solidPlacementAList = []
     solidBoxAList = []
-    worldPointA = CAD.Vector()
+    worldPointA = FreeCAD.Vector()
     if objectToDecorate.point_I_i_Name != "":
         # Find the bounding boxes of the component solids
         # solidNameList - names of the solids
         # solidPlacementList - The Placement.Base are the world coordinates of the solid origin
         # solidBoxList - The BoundBox values are the rectangular cartesian world coordinates of the bounding box
-        Document = CAD.ActiveDocument
+        Document = FreeCAD.ActiveDocument
         for solidName in body_I_object.ass4SolidsNames:
             solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
             solidNameAList.append(solidName)
@@ -829,10 +760,10 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
     solidNameBList = []
     solidPlacementBList = []
     solidBoxBList = []
-    worldPointB = CAD.Vector()
+    worldPointB = FreeCAD.Vector()
     if objectToDecorate.point_J_i_Name != "":
         # Find the bounding boxes of the component solids
-        Document = CAD.ActiveDocument
+        Document = FreeCAD.ActiveDocument
         for solidName in body_J_object.ass4SolidsNames:
             solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
             solidNameBList.append(solidName)
@@ -886,8 +817,8 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
         # Draw some shapes in the gui, to show the point positions
         CurrentJointType = objectToDecorate.JointType
         planeNormal = getActiveContainerObject().movementPlaneNormal
-        point_I_i_ = CAD.Vector(worldPointA)
-        point_J_i_ = CAD.Vector(worldPointB)
+        point_I_i_ = FreeCAD.Vector(worldPointA)
+        point_J_i_ = FreeCAD.Vector(worldPointB)
 
         # Do some calculation of the torus sizes for Rev and Rev-Rev points
         if CurrentJointType == 0 or CurrentJointType == 2:
@@ -897,13 +828,13 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
             # Set the point Diameter to the middle value of the Intersection box's xlength ylength zlength
             if planeNormal.x > 1e-6:
                 point_I_i_.x = (worldPointA.x + worldPointB.x) / 2.0
-                point_J_i_.x = point_I_i.x
+                point_J_i_.x = point_I_i_.x
             elif planeNormal.y > 1e-6:
-                point_I_i.y = (worldPointA.y + worldPointB.y) / 2.0
-                point_J_i_.y = point_I_i.y
+                point_I_i_.y = (worldPointA.y + worldPointB.y) / 2.0
+                point_J_i_.y = point_I_i_.y
             elif planeNormal.z > 1e-6:
-                point_I_i.z = (worldPointA.z + worldPointB.z) / 2.0
-                point_J_i_.z = point_I_i.z
+                point_I_i_.z = (worldPointA.z + worldPointB.z) / 2.0
+                point_J_i_.z = point_I_i_.z
 
         # Draw the yellow circular arrow in the case of 'Rev' point
         if CurrentJointType == 0 \
@@ -917,7 +848,7 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
             if pointDiam > 1e-6:
                 # Draw the Left side
                 # False == Left side
-                Shape1 = DrawRotArrow(point_I_i, False, pointDiam)
+                Shape1 = DrawRotArrow(point_I_i_, False, pointDiam)
                 # Draw the Right side
                 # True == Right side
                 Shape2 = DrawRotArrow(point_J_i_, True, pointDiam)
@@ -944,17 +875,17 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
                                         solidBoxBList[BSolidIndex].ZLength,
                                         2)
             # Draw both left and right sides of the torus
-            Shape1 = DrawRotArrow(point_I_i, True, point_I_iDiam / 2)
-            Shape2 = DrawRotArrow(point_I_i, False, point_I_iDiam / 2)
+            Shape1 = DrawRotArrow(point_I_i_, True, point_I_iDiam / 2)
+            Shape2 = DrawRotArrow(point_I_i_, False, point_I_iDiam / 2)
             Shape3 = DrawRotArrow(point_J_i_, True, point_J_i_Diam / 2)
             Shape4 = DrawRotArrow(point_J_i_, False, point_J_i_Diam / 2)
             # Draw the arrow
-            Shape5 = DrawTransArrow(point_I_i, point_J_i_, point_I_iDiam / 2)
+            Shape5 = DrawTransArrow(point_I_i_, point_J_i_, point_I_iDiam / 2)
             Shape = Part.makeCompound([Shape1, Shape2, Shape3, Shape4, Shape5])
             objectToDecorate.Shape = Shape
             objectToDecorate.ViewObject.ShapeColor = (1.0, 0.5, 1.0, 1.0)
             objectToDecorate.ViewObject.Transparency = 20
-            objectToDecorate.lengthLink = (point_I_i - point_J_i_).Length
+            objectToDecorate.lengthLink = (point_I_i_ - point_J_i_).Length
 
         # Draw a circular arrow and a line in the case of 'Revolute-Translation' point
         elif CurrentJointType == 3:
@@ -985,383 +916,6 @@ def decorateObject(objectToDecorate, body_I_object, body_J_object):
             # TODO: The appropriate shapes may be added at a later time
             objectToDecorate.Shape = Part.Shape()
 # --------------------------------------------------------------------------
-def decorateObjectLegacy(objectToDecorate, body_I_object, body_J_object):
-    """ # Get the world coordinates etc. of the A point
-    solidNameAList = []
-    solidPlacementAList = []
-    solidBoxAList = []
-    worldPointA = CAD.Vector()
-    if objectToDecorate.point_I_i_Name != "":
-        # Find the bounding boxes of the component solids
-        # solidNameList - names of the solids
-        # solidPlacementList - The Placement.Base are the world coordinates of the solid origin
-        # solidBoxList - The BoundBox values are the rectangular cartesian world coordinates of the bounding box
-        Document = CAD.ActiveDocument
-        for solidName in body_I_object.ass4SolidsNames:
-            solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
-            solidNameAList.append(solidName)
-            solidPlacementAList.append(solidObj.Placement)
-            solidBoxAList.append(solidObj.Shape.BoundBox)
-
-        # Get the A world Placement of the compound DAP body
-        worldAPlacement = body_I_object.world
-        if Debug:
-            MessNoLF("Main Body World A Placement: ")
-            Mess(worldAPlacement)
-        pointIndex = body_I_object.pointNames.index(objectToDecorate.point_I_i_Name)
-        point_I_i_Local = body_I_object.pointLocals[pointIndex]
-        worldPointA = worldAPlacement.toMatrix().multVec(point_I_i_Local)
-
-    # Get the world coordinates etc. of the B of the point
-    solidNameBList = []
-    solidPlacementBList = []
-    solidBoxBList = []
-    worldPointB = CAD.Vector()
-    if objectToDecorate.point_J_i_Name != "":
-        # Find the bounding boxes of the component solids
-        Document = CAD.ActiveDocument
-        for solidName in body_J_object.ass4SolidsNames:
-            solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
-            solidNameBList.append(solidName)
-            solidPlacementBList.append(solidObj.Placement)
-            solidBoxBList.append(solidObj.Shape.BoundBox)
-
-        # Get the B world Placement of the compound DAP body
-        worldBPlacement = body_J_object.world
-        if Debug:
-            MessNoLF("Main Body World B Placement: ")
-            Mess(worldBPlacement)
-        pointIndex = body_J_object.pointNames.index(objectToDecorate.point_J_i_Name)
-        point_J_i_Local = body_J_object.pointLocals[pointIndex]
-        worldPointB = worldBPlacement.toMatrix().multVec(point_J_i_Local)
-
-    if Debug:
-        Mess("Solid lists:")
-        for i in range(len(solidNameAList)):
-            MessNoLF(solidNameAList[i])
-            MessNoLF(" -- ")
-            MessNoLF(solidPlacementAList[i])
-            MessNoLF(" -- ")
-            Mess(solidBoxAList[i])
-        for i in range(len(solidNameBList)):
-            MessNoLF(solidNameBList[i])
-            MessNoLF(" -- ")
-            MessNoLF(solidPlacementBList[i])
-            MessNoLF(" -- ")
-            Mess(solidBoxBList[i])
-        MessNoLF("World A point: ")
-        PrintVec(worldPointA)
-        MessNoLF("World B point: ")
-        PrintVec(worldPointB)
-
-    # Identify in which solid bounding box, the A and B points are
-    ASolidIndex = BSolidIndex = 1
-    for boxIndex in range(len(solidBoxAList)):
-        if solidBoxAList[boxIndex].isInside(worldPointA):
-            if Debug:
-                MessNoLF("A point inside: ")
-                Mess(solidNameAList[boxIndex])
-            ASolidIndex = boxIndex
-    for boxIndex in range(len(solidBoxBList)):
-        if solidBoxBList[boxIndex].isInside(worldPointB):
-            if Debug:
-                MessNoLF("B point inside: ")
-                Mess(solidNameBList[boxIndex])
-            BSolidIndex = boxIndex
-
-    if objectToDecorate.point_I_i_Name != "" and objectToDecorate.point_J_i_Name != "":
-        # Draw some shapes in the gui, to show the point positions
-        boxIntersection = solidBoxAList[ASolidIndex].intersected(solidBoxBList[BSolidIndex])
-        CurrentJointType = objectToDecorate.JointType
-        planeNormal = getActiveContainerObject().movementPlaneNormal
-        point_I_i_ = CAD.Vector(worldPointA)
-        point_J_i_ = CAD.Vector(worldPointB)
-
-        # Do some calculation of the torus sizes for Rev and Rev-Rev points
-        if CurrentJointType == 0 or CurrentJointType == 2:
-            # Depending on the plane normal:
-            # Move the two thickness coordinates to their average,
-            # Squash the thickness to zero, and
-            # Set the point Diameter to the middle value of the Intersection box's xlength ylength zlength
-            if planeNormal.x > 1e-6:
-                point_I_i_.x = (worldPointA.x + worldPointB.x) / 2.0
-                point_J_i_.x = point_I_i.x
-            elif planeNormal.y > 1e-6:
-                point_I_i.y = (worldPointA.y + worldPointB.y) / 2.0
-                point_J_i_.y = point_I_i.y
-            elif planeNormal.z > 1e-6:
-                point_I_i.z = (worldPointA.z + worldPointB.z) / 2.0
-                point_J_i_.z = point_I_i.z
-
-        # Draw the yellow circular arrow in the case of 'Rev' point
-        if CurrentJointType == 0 \
-                and objectToDecorate.point_I_iName != "" \
-                and objectToDecorate.point_J_i_Name != "":
-            pointDiam = minMidMax3(boxIntersection.XLength,
-                                   boxIntersection.YLength,
-                                   boxIntersection.ZLength,
-                                   2)
-            # Only draw if the diameter non-zero
-            if pointDiam > 1e-6:
-                # Draw the Left side
-                # False == Left side
-                Shape1 = DrawRotArrow(point_I_i, False, pointDiam)
-                # Draw the Right side
-                # True == Right side
-                Shape2 = DrawRotArrow(point_J_i_, True, pointDiam)
-                Shape = Part.makeCompound([Shape1, Shape2])
-                objectToDecorate.Shape = Shape
-                objectToDecorate.ViewObject.ShapeColor = (1.0, 1.0, 0.5, 1.0)
-                objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw a straight red arrow in the case of 'trans' point
-        elif CurrentJointType == 1:
-            Shape = DrawTransArrow(worldPointB, worldPointA, 15)
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.5, 0.5, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw the two circular arrows and a line in the case of 'Revolute-Revolute' point
-        elif CurrentJointType == 2:
-            point_I_iDiam = minMidMax3(solidBoxAList[ASolidIndex].XLength,
-                                       solidBoxAList[ASolidIndex].YLength,
-                                       solidBoxAList[ASolidIndex].ZLength,
-                                       2)
-            point_J_i_Diam = minMidMax3(solidBoxBList[BSolidIndex].XLength,
-                                        solidBoxBList[BSolidIndex].YLength,
-                                        solidBoxBList[BSolidIndex].ZLength,
-                                        2)
-            # Draw both left and right sides of the torus
-            Shape1 = DrawRotArrow(point_I_i, True, point_I_iDiam / 2)
-            Shape2 = DrawRotArrow(point_I_i, False, point_I_iDiam / 2)
-            Shape3 = DrawRotArrow(point_J_i_, True, point_J_i_Diam / 2)
-            Shape4 = DrawRotArrow(point_J_i_, False, point_J_i_Diam / 2)
-            # Draw the arrow
-            Shape5 = DrawTransArrow(point_I_i, point_J_i_, point_I_iDiam / 2)
-            Shape = Part.makeCompound([Shape1, Shape2, Shape3, Shape4, Shape5])
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.5, 1.0, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-            objectToDecorate.lengthLink = (point_I_i - point_J_i_).Length
-
-        # Draw a circular arrow and a line in the case of 'Revolute-Translation' point
-        elif CurrentJointType == 3:
-            Shape1 = DrawRotArrow(worldPointA, True, 3)
-            Shape2 = DrawRotArrow(worldPointA, False, 3)
-            Shape3 = DrawTransArrow(worldPointA, worldPointB, 15)
-            Shape = Part.makeCompound([Shape1, Shape2, Shape3])
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (0.5, 1.0, 1.0, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw a Bolt in the case of 'Rigid' point
-        elif CurrentJointType == 7:
-            point_I_ilen = minMidMax3(boxIntersection.XLength,
-                                      boxIntersection.YLength,
-                                      boxIntersection.ZLength,
-                                      3)
-            point_I_idiam = minMidMax3(boxIntersection.XLength,
-                                       boxIntersection.YLength,
-                                       boxIntersection.ZLength,
-                                       2)
-            objectToDecorate.Shape = DrawRigidBolt(worldPointA, point_I_idiam / 3, point_I_ilen / 3)
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.5, 0.5, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        else:
-            # Add a null shape to the object for the other more fancy types
-            # TODO: The appropriate shapes may be added at a later time
-            objectToDecorate.Shape = Part.Shape()
-    """
-# --------------------------------------------------------------------------
-def OldDecorate():
-    """
-    # Get the world coordinates etc. of the A point
-    solidNameAList = []
-    solidPlacementAList = []
-    solidBoxAList = []
-    worldPointA = CAD.Vector()
-    if objectToDecorate.point_I_iName != "":
-        # Find the bounding boxes of the component solids
-        # solidNameList - names of the solids
-        # solidPlacementList - The Placement.Base are the world coordinates of the solid origin
-        # solidBoxList - The BoundBox values are the rectangular cartesian world coordinates of the bounding box
-        Document = CAD.ActiveDocument
-        for solidName in body_I_object.ass4SolidsNames:
-            solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
-            solidNameAList.append(solidName)
-            solidPlacementAList.append(solidObj.Placement)
-            solidBoxAList.append(solidObj.Shape.BoundBox)
-
-        # Get the A world Placement of the compound DAP body
-        worldAPlacement = body_I_object.world
-        if Debug:
-            MessNoLF("Main Body World A Placement: ")
-            Mess(worldAPlacement)
-        pointIndex = body_I_object.pointNames.index(objectToDecorate.point_I_iName)
-        point_I_iLocal = body_I_object.pointLocals[pointIndex]
-        worldPointA = worldAPlacement.toMatrix().multVec(point_I_iLocal)
-
-    # Get the world coordinates etc. of the B of the point
-    solidNameBList = []
-    solidPlacementBList = []
-    solidBoxBList = []
-    worldPointB = CAD.Vector()
-    if objectToDecorate.point_J_i_Name != "":
-        # Find the bounding boxes of the component solids
-        Document = CAD.ActiveDocument
-        for solidName in body_J_object.ass4SolidsNames:
-            solidObj = Document.findObjects(Name="^" + solidName + "$")[0]
-            solidNameBList.append(solidName)
-            solidPlacementBList.append(solidObj.Placement)
-            solidBoxBList.append(solidObj.Shape.BoundBox)
-
-        # Get the B world Placement of the compound DAP body
-        worldBPlacement = body_J_object.world
-        if Debug:
-            MessNoLF("Main Body World B Placement: ")
-            Mess(worldBPlacement)
-        pointIndex = body_J_object.pointNames.index(objectToDecorate.point_J_i_Name)
-        point_J_i_Local = body_J_object.pointLocals[pointIndex]
-        worldPointB = worldBPlacement.toMatrix().multVec(point_J_i_Local)
-
-    if Debug:
-        Mess("Solid lists:")
-        for i in range(len(solidNameAList)):
-            MessNoLF(solidNameAList[i])
-            MessNoLF(" -- ")
-            MessNoLF(solidPlacementAList[i])
-            MessNoLF(" -- ")
-            Mess(solidBoxAList[i])
-        for i in range(len(solidNameBList)):
-            MessNoLF(solidNameBList[i])
-            MessNoLF(" -- ")
-            MessNoLF(solidPlacementBList[i])
-            MessNoLF(" -- ")
-            Mess(solidBoxBList[i])
-        MessNoLF("World A point: ")
-        PrintVec(worldPointA)
-        MessNoLF("World B point: ")
-        PrintVec(worldPointB)
-
-    # Identify in which solid bounding box, the A and B points are
-    ASolidIndex = BSolidIndex = 1
-    for boxIndex in range(len(solidBoxAList)):
-        if solidBoxAList[boxIndex].isInside(worldPointA):
-            if Debug:
-                MessNoLF("A point inside: ")
-                Mess(solidNameAList[boxIndex])
-            ASolidIndex = boxIndex
-    for boxIndex in range(len(solidBoxBList)):
-        if solidBoxBList[boxIndex].isInside(worldPointB):
-            if Debug:
-                MessNoLF("B point inside: ")
-                Mess(solidNameBList[boxIndex])
-            BSolidIndex = boxIndex
-
-    if objectToDecorate.point_I_iName != "" and objectToDecorate.point_J_i_Name != "":
-        # Draw some shapes in the gui, to show the point positions
-        boxIntersection = solidBoxAList[ASolidIndex].intersected(solidBoxBList[BSolidIndex])
-        CurrentJointType = objectToDecorate.JointType
-        planeNormal = getActiveContainerObject().movementPlaneNormal
-        point_I_i = CAD.Vector(worldPointA)
-        point_J_i_ = CAD.Vector(worldPointB)
-
-        # Do some calculation of the torus sizes for Rev and Rev-Rev points
-        if CurrentJointType == 0 or CurrentJointType == 2:
-            # Depending on the plane normal:
-            # Move the two thickness coordinates to their average,
-            # Squash the thickness to zero, and
-            # Set the point Diameter to the middle value of the Intersection box's xlength ylength zlength
-            if planeNormal.x > 1e-6:
-                point_I_i.x = (worldPointA.x + worldPointB.x) / 2.0
-                point_J_i_.x = point_I_i.x
-            elif planeNormal.y > 1e-6:
-                point_I_i.y = (worldPointA.y + worldPointB.y) / 2.0
-                point_J_i_.y = point_I_i.y
-            elif planeNormal.z > 1e-6:
-                point_I_i.z = (worldPointA.z + worldPointB.z) / 2.0
-                point_J_i_.z = point_I_i.z
-
-        # Draw the yellow circular arrow in the case of 'Rev' point
-        if CurrentJointType == 0 \
-                and objectToDecorate.point_I_iName != "" \
-                and objectToDecorate.point_J_i_Name != "":
-            pointDiam = minMidMax3(boxIntersection.XLength,
-                                   boxIntersection.YLength,
-                                   boxIntersection.ZLength,
-                                   2)
-            # Only draw if the diameter non-zero
-            if pointDiam > 1e-6:
-                # Draw the Left side
-                # False == Left side
-                Shape1 = DrawRotArrow(point_I_i, False, pointDiam)
-                # Draw the Right side
-                # True == Right side
-                Shape2 = DrawRotArrow(point_J_i_, True, pointDiam)
-                Shape = Part.makeCompound([Shape1, Shape2])
-                objectToDecorate.Shape = Shape
-                objectToDecorate.ViewObject.ShapeColor = (1.0, 1.0, 0.0)
-                objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw a straight red arrow in the case of 'trans' point
-        elif CurrentJointType == 1:
-            Shape = DrawTransArrow(worldPointB, worldPointA, 15)
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw the two circular arrows and a line in the case of 'Revolute-Revolute' point
-        elif CurrentJointType == 2:
-            point_I_iDiam = minMidMax3(solidBoxAList[ASolidIndex].XLength,
-                                       solidBoxAList[ASolidIndex].YLength,
-                                       solidBoxAList[ASolidIndex].ZLength,
-                                       2)
-            point_J_i_Diam = minMidMax3(solidBoxBList[BSolidIndex].XLength,
-                                       solidBoxBList[BSolidIndex].YLength,
-                                       solidBoxBList[BSolidIndex].ZLength,
-                                       2)
-            # Draw both left and right sides of the torus
-            Shape1 = DrawRotArrow(point_I_i, True, point_I_iDiam / 2)
-            Shape2 = DrawRotArrow(point_I_i, False, point_I_iDiam / 2)
-            Shape3 = DrawRotArrow(point_J_i_, True, point_J_i_Diam / 2)
-            Shape4 = DrawRotArrow(point_J_i_, False, point_J_i_Diam / 2)
-            # Draw the arrow
-            Shape5 = DrawTransArrow(point_I_i, point_J_i_, point_I_iDiam / 2)
-            Shape = Part.makeCompound([Shape1, Shape2, Shape3, Shape4, Shape5])
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.0, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-            objectToDecorate.lengthLink = (point_I_i - point_J_i_).Length
-
-        # Draw a circular arrow and a line in the case of 'Translation-Revolute' point
-        elif CurrentJointType == 3:
-            Shape1 = DrawRotArrow(worldPointA, True, 3)
-            Shape2 = DrawRotArrow(worldPointA, False, 3)
-            Shape3 = DrawTransArrow(worldPointA, worldPointB, 15)
-            Shape = Part.makeCompound([Shape1, Shape2, Shape3])
-            objectToDecorate.Shape = Shape
-            objectToDecorate.ViewObject.ShapeColor = (0.0, 1.0, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        # Draw a Bolt in the case of 'Rigid' point
-        elif CurrentJointType == 7:
-            point_I_ilen = minMidMax3(boxIntersection.XLength,
-                                      boxIntersection.YLength,
-                                      boxIntersection.ZLength,
-                                      3)
-            point_I_idiam = minMidMax3(boxIntersection.XLength,
-                                       boxIntersection.YLength,
-                                       boxIntersection.ZLength,
-                                       2)
-            objectToDecorate.Shape = DrawRigidBolt(worldPointA, point_I_idiam / 3, point_I_ilen / 3)
-            objectToDecorate.ViewObject.ShapeColor = (1.0, 0.0, 0.0, 1.0)
-            objectToDecorate.ViewObject.Transparency = 20
-
-        else:
-            # Add a null shape to the object for the other more fancy types
-            # TODO: The appropriate shapes may be added at a later time
-            objectToDecorate.Shape = Part.Shape() """
 #  -------------------------------------------------------------------------
 def NormalizeNpVec(vecNp):
     if Debug:
@@ -1498,37 +1052,4 @@ def nicePhiPlease(vectorsRelativeCoG):
             phi -= math.pi
 
     return phi
-#  -------------------------------------------------------------------------
-def Contact(constraintIndex, indexPoint, bodyObj, kConst, eConst, FlagsList, penetrationDot0List,
-            contact_LN_or_FM=True):
-    penetration = -bodyObj.pointXYWorldNp[indexPoint].y
-    if penetration > 0:
-        penetrationDot = -bodyObj.pointWorldDotNp[indexPoint].y
-        if FlagsList[constraintIndex] is False:
-            penetrationDot0List[constraintIndex] = penetrationDot
-            FlagsList[constraintIndex] = True
-
-        if contact_LN_or_FM is True:
-            forceY = Contact_LN(penetration, penetrationDot, penetrationDot0List[constraintIndex], kConst, eConst)
-        else:
-            forceY = Contact_FM(penetration, penetrationDot, penetrationDot0List[constraintIndex], kConst, eConst)
-
-        Friction = CAD.Vector(0.0, forceY, 0.0)
-        bodyObj.sumForces = bodyObj.sumForces + Friction
-        bodyObj.sumMoments = bodyObj.sumMoments + bodyObj.pVecRot[indexPoint].dot(Friction)
-    else:
-        FlagsList[constraintIndex] = False
-#  -------------------------------------------------------------------------
-def Contact_FM(delta, deltaDot, deltaDot0, kConst, eConst):
-    return kConst * (delta ** 1.5) * (1 + 8 * (1 - eConst) * deltaDot / (5 * eConst * deltaDot0))
-#  -------------------------------------------------------------------------
-def Contact_LN(delta, deltaDot, deltaDot0, kConst, eConst):
-    return kConst * (delta ** 1.5) * (1 + 3 * (1 - eConst * eConst) * deltaDot / (4 * deltaDot0))
-#  -------------------------------------------------------------------------
-def Friction_A(mu_s, mu_d, v_s, p, k_t, v, fN):
-    return fN * (mu_d + (mu_s - mu_d) * exp(-(abs(v) / v_s) ** p)) * tanh(k_t * v)
-#  -------------------------------------------------------------------------
-def Friction_B(mu_s, mu_d, mu_v, v_t, fnt, v, fN):
-    vr = v / v_t
-    return fN * (mu_d * tanh(4 * vr) + (mu_s - mu_d) *
-                 vr / (0.25 * vr * vr + 0.75) ** 2) + mu_v * v * tanh(4 * fN / fnt)
+#  ------------------------------------------------------------------------

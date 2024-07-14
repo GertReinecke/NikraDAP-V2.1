@@ -1,62 +1,5 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Library General Public License for more details.               *
-# *                                                                              *
-# *   You should have received a copy of the GNU Library General Public          *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 from os import path
 from materialtools import cardutils
@@ -69,8 +12,8 @@ Debug = False
 # =============================================================================
 def makeDapMaterial(name="DapMaterial"):
     if Debug:
-        CAD.Console.PrintMessage("makeDapMaterial\n")
-    materialObject = CAD.ActiveDocument.addObject("Part::FeaturePython", name)
+        FreeCAD.Console.PrintMessage("makeDapMaterial\n")
+    materialObject = FreeCAD.ActiveDocument.addObject("Part::FeaturePython", name)
     # Instantiate a DapMaterial object
     DapMaterialClass(materialObject)
     # Instantiate the class to handle the Gui stuff
@@ -80,15 +23,15 @@ def makeDapMaterial(name="DapMaterial"):
 class CommandDapMaterialClass:
     """The Dap Material command definition"""
     if Debug:
-        CAD.Console.PrintMessage("CommandDapMaterialClass-CLASS\n")
+        FreeCAD.Console.PrintMessage("CommandDapMaterialClass-CLASS\n")
     #  -------------------------------------------------------------------------
     def GetResources(self):
         """Called by FreeCAD when 'CADGui.addCommand' is run in InitGui.py
         Returns a dictionary defining the icon, the menu text and the tooltip"""
         if Debug:
-            CAD.Console.PrintMessage("CommandDapMaterialClass-GetResources\n")
+            FreeCAD.Console.PrintMessage("CommandDapMaterialClass-GetResources\n")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "icons", "Icon5n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon5n.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("Dap_Material_alias", "Add Material"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("Dap_Material_alias", "Define the material properties associated with each body part.")
         }
@@ -97,26 +40,26 @@ class CommandDapMaterialClass:
         """Determine if the command/icon must be active or greyed out.
         Only activate it when there is at least one body defined"""
         if Debug:
-            CAD.Console.PrintMessage("CommandDapMaterialClass-IsActive(query)\n")
+            FreeCAD.Console.PrintMessage("CommandDapMaterialClass-IsActive(query)\n")
         return (len(DT.getDictionary("DapBody")) > 0) and (DT.getMaterialObject() is None)
     #  -------------------------------------------------------------------------
     def Activated(self):
         """Called when the Material Selection command is run"""
         if Debug:
-            CAD.Console.PrintMessage("CommandDapMaterialClass-Activated\n")
+            FreeCAD.Console.PrintMessage("CommandDapMaterialClass-Activated\n")
         # This is where we create a new empty Dap Material object
         DT.getActiveContainerObject().addObject(makeDapMaterial())
         # Switch on the Dap Material Task Panel
-        CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
+        FreeCADGui.ActiveDocument.setEdit(FreeCAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapBodyClass-dumps\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapBodyClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapBodyClass-loads\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapBodyClass-loads\n")
         if state:
             self.Type = state
         return None
@@ -124,24 +67,24 @@ class CommandDapMaterialClass:
 class DapMaterialClass:
     """Defines the DAP material class"""
     if Debug:
-        CAD.Console.PrintMessage("DapMaterialClass-CLASS\n")
+        FreeCAD.Console.PrintMessage("DapMaterialClass-CLASS\n")
     #  -------------------------------------------------------------------------
     def __init__(self, materialObject):
         """Initialise on instantiation of a new DAP Material object"""
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-__init__\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-__init__\n")
         materialObject.Proxy = self
         self.addPropertiesToObject(materialObject)
     #  -------------------------------------------------------------------------
     def onDocumentRestored(self, materialObject):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-onDocumentRestored\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-onDocumentRestored\n")
         self.addPropertiesToObject(materialObject)
     #  -------------------------------------------------------------------------
     def addPropertiesToObject(self, materialObject):
         """Called by __init__ and onDocumentRestored functions"""
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-addPropertiesToObject\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-addPropertiesToObject\n")
 
         DT.addObjectProperty(materialObject, "solidsNameList",       [],   "App::PropertyStringList", "", "List of Solid Part Names")
         DT.addObjectProperty(materialObject, "materialsNameList",    [],   "App::PropertyStringList", "", "List of matching Material Names")
@@ -150,12 +93,12 @@ class DapMaterialClass:
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-dumps\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-loads\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-loads\n")
         if state:
             self.Type = state
         return None
@@ -166,18 +109,18 @@ class DapMaterialClass:
 class ViewProviderDapMaterialClass:
     """Handle the screen interface stuff for the materials dialog"""
     if Debug:
-        CAD.Console.PrintMessage("ViewProviderDapMaterialClass-CLASS\n")
+        FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-CLASS\n")
     #  -------------------------------------------------------------------------
     def __init__(self, materialViewObject):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-__init__\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-__init__\n")
         materialViewObject.Proxy = self
     #  -------------------------------------------------------------------------
     def doubleClicked(self, materialViewObject):
         """Open up the TaskPanel if it is not open"""
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-doubleClicked\n")
-        Document = CADGui.getDocument(materialViewObject.Object.Document)
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-doubleClicked\n")
+        Document = FreeCADGui.getDocument(materialViewObject.Object.Document)
         if not Document.getInEdit():
             Document.setEdit(materialViewObject.Object.Name)
         return True
@@ -186,7 +129,7 @@ class ViewProviderDapMaterialClass:
         """Returns the full path to the material icon (Icon5n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapMaterialClass-getIcon")
-        return path.join(DT.getDapModulePath(), "icons", "Icon5n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "Icon5n.png")
     #  -------------------------------------------------------------------------
     def attach(self, materialViewObject):
         if Debug:
@@ -196,17 +139,17 @@ class ViewProviderDapMaterialClass:
     #  -------------------------------------------------------------------------
     def getDisplayModes(self, materialObject):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDisplayModes\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDisplayModes\n")
         return []
     #  -------------------------------------------------------------------------
     def getDefaultDisplayMode(self):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDefaultDisplayMode\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDefaultDisplayMode\n")
         return "Flat Lines"
     #  -------------------------------------------------------------------------
     def setDisplayMode(self, mode):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-setDisplayMode\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-setDisplayMode\n")
         return mode
     #  -------------------------------------------------------------------------
     def updateData(self, obj, prop):
@@ -216,23 +159,23 @@ class ViewProviderDapMaterialClass:
         """Edit the parameters by calling the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapMaterialClass-setEdit")
-        CADGui.Control.showDialog(TaskPanelDapMaterialClass(self.materialObject))
+        FreeCADGui.Control.showDialog(TaskPanelDapMaterialClass(self.materialObject))
         return True
     #  -------------------------------------------------------------------------
     def unsetEdit(self, materialViewObject, mode):
         """Close the task dialog when we have finished using it"""
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-unsetEdit\n")
-        CADGui.Control.closeDialog()
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-unsetEdit\n")
+        FreeCADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-dumps\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("ViewProviderDapMaterialClass-loads\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-loads\n")
         if state:
             self.Type = state
         return None
@@ -240,12 +183,12 @@ class ViewProviderDapMaterialClass:
 class TaskPanelDapMaterialClass:
     """Task panel for adding a Material for each solid Part"""
     if Debug:
-        CAD.Console.PrintMessage("TaskPanelDapMaterialClass-CLASS\n")
+        FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-CLASS\n")
     #  -------------------------------------------------------------------------
     def __init__(self, materialTaskObject):
         """Run on first instantiation of a TaskPanelDapMaterial class"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapMaterialClass-__init__\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-__init__\n")
 
         self.materialTaskObject = materialTaskObject
         materialTaskObject.Proxy = self
@@ -295,7 +238,7 @@ class TaskPanelDapMaterialClass:
 
         # Set up the task dialog
         ui_path = path.join(path.dirname(__file__), "TaskPanelDapMaterials.ui")
-        self.form = CADGui.PySideUic.loadUi(ui_path)
+        self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Set up kg/m3 according to the material object value
         if materialTaskObject.kgm3ORgcm3 is True:
@@ -364,7 +307,7 @@ class TaskPanelDapMaterialClass:
     def accept(self):
         """Run when we press the OK button"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapMaterialClass-accept\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-accept\n")
 
         # Transfer the lists we have been working on, into the material Object
         self.materialTaskObject.solidsNameList = self.modelSolidsNamesList
@@ -380,7 +323,7 @@ class TaskPanelDapMaterialClass:
 
         # Update all the stuff by asking for a re-compute
         self.materialTaskObject.recompute()
-        CADGui.getDocument(self.materialTaskObject.Document).resetEdit()
+        FreeCADGui.getDocument(self.materialTaskObject.Document).resetEdit()
     #  -------------------------------------------------------------------------
     def densityUnits_Callback(self):
         """Fix up the densities if we change between kg/m3 and g/cm3"""
@@ -402,7 +345,7 @@ class TaskPanelDapMaterialClass:
     def manualDensityEntered_Callback(self):
         """We have entered a density value manually"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapMaterialClass-manualDensityEntered_Callback\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-manualDensityEntered_Callback\n")
 
         currentRow = self.form.tableWidget.currentRow()
         currentColumn = self.form.tableWidget.currentColumn()
@@ -442,7 +385,7 @@ class TaskPanelDapMaterialClass:
     def MaterialComboChanged_Callback(self):
         """We have changed the type of material for this body"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapMaterialClass-MaterialComboChanged_Callback\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-MaterialComboChanged_Callback\n")
 
         # Find out where in the table our change occurred
         currentRow = self.form.tableWidget.currentRow()
@@ -472,31 +415,31 @@ class TaskPanelDapMaterialClass:
     def showSelectionInGui_Callback(self, row, column):
         """Show the object in the Gui when we click on its name in the table"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapMaterialClass-showSelectionInGui_Callback\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapMaterialClass-showSelectionInGui_Callback\n")
 
         #  Select the object to make it highlighted
         if column == 0:
             # Find the object matching the solid item we have clicked on
             selectionObjectName = self.form.tableWidget.item(row, column).text()
-            selection_object = CAD.ActiveDocument.findObjects(Label="^"+selectionObjectName+"$")[0]
+            selection_object = FreeCAD.ActiveDocument.findObjects(Label="^"+selectionObjectName+"$")[0]
             # Clear other possible visible selections and make this solid show in the "selected" colour
-            CADGui.Selection.clearSelection()
-            CADGui.Selection.addSelection(selection_object)
+            FreeCADGui.Selection.clearSelection()
+            FreeCADGui.Selection.addSelection(selection_object)
     #  -------------------------------------------------------------------------
     def getStandardButtons(self):
         """ Set which button will appear at the top of the TaskDialog [Called from FreeCAD]"""
         if Debug:
-            CAD.Console.PrintMessage("TaskPanelDapAnimateClass-getStandardButtons\n")
+            FreeCAD.Console.PrintMessage("TaskPanelDapAnimateClass-getStandardButtons\n")
         return int(QtGui.QDialogButtonBox.Ok)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-dumps\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            CAD.Console.PrintMessage("DapMaterialClass-loads\n")
+            FreeCAD.Console.PrintMessage("DapMaterialClass-loads\n")
         if state:
             self.Type = state
         return None

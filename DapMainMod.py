@@ -1,62 +1,5 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 import os
 import numpy as np
@@ -68,104 +11,7 @@ import DapToolsMod as DT
 import DapFunctionMod
 
 Debug = False
-# =============================================================================
-# ==================================
-# Matlab Code from Nikravesh: DAP_BC
-# ==================================
-# Body = struct ( ...
-#    'm'     , 1     , ... % mass
-#    'J'     , 1     , ... % moment of inertia
-#    'r'	 , [0;0] , ... % x, y coordinates
-#    'p'  	 , 0     , ... % angle phi
-#    'r_d'   , [0;0] , ... % time derivative of x and y
-#    'p_d'   , 0     , ... % time derivative of phi
-#    'A'	 , eye(2), ... % rotational transformation matrix
-#    'r_dd'  , [0;0] , ... % x_double_dot,y_double_do
-#    'p_dd'  , 0     , ... % 2nd time derivative of phi
-#    'irc'   , 0     , ... % index of the 1st element of r in u or u_dot
-#    'irv'   , 0     , ... % index of the 1st element of r_dot in u or u_dot
-#    'ira'   , 0     , ... % index of the 1st element of r_dot2 in v_dot
-#    'm_inv' , 1     , ... % mass inverse
-#    'J_inv' , 1     , ... % inverse of moment of inertia
-#    'wgt'   , [0;0] , ... % weight of body as a force vector
-#    'f'     , [0;0] , ... % sum of forces that act on the body
-#    'n'     , 0     , ... % sum of moments that act on the body
-#    'shape' , ' '   , ... % 'circle', 'rect', line
-#    'R'     , 1     , ... % radius of the circle
-#    'circ'  , []    , ... % points on circumference of the circle
-#    'W'     , 0     , ... % width of the rectangle
-#    'H'     , 0     , ... % hight of the rectangle
-#    'color' , 'k'   , ... % default color for the body
-#    'P4'    , []    , ... % 4 corners of the rectangle
-#    'pts'   , []      ... % point indexes associated with this body
-# );
 
-# Point = struct ( ...
-#    'Bindex' , 0     , ... % body index
-#    'sPlocal', [0;0] , ... % body-fixed coordinates
-#    'sP'     , [0;0] , ... % x, y components of vector s
-#    'sP_r'   , [0;0] , ... % vector s rotated
-#    'rP'     , [0;0] , ... % x, y coordinates of the point
-#    'sP_d'   , [0;0] , ... % s_P_dot
-#    'rP_d'   , [0;0] , ... % r_P_dot
-#    'rP_dd'  , [0;0]   ... % r_P_dot2
-# );
-
-# Force = struct ( ...
-#    'type'   , 'ptp',  ... % element type: ptp, rot_sda, weight, fp, f, T
-#    'iPindex', 0    ,  ... % index of the head (arrow) point
-#    'jPindex', 0    ,  ... % index of the tail point
-#    'iBindex', 0    ,  ... % index of the head (arrow) body
-#    'jBindex', 0    ,  ... % index of the tail body
-#    'k'      , 0    ,  ... % spring stiffness
-#    'L0'     , 0    ,  ... % undeformed length
-#    'theta0' , 0    ,  ... % undeformed angle
-#    'dc'     , 0    ,  ... % damping coefficient
-#    'f_a'    , 0    ,  ... % constant actuator force
-#    'T_a'    , 0    ,  ... % constant actuator torque
-#    'gravity', 9.81 ,  ... % gravitational constant
-#    'wgt'    , [0;-1], ... % gravitational direction
-#    'flocal' , [0;0],  ... % constant force in local frame
-#    'f'      , [0;0],  ... % constant force in x-y frame
-#    'T'      , 0    ,  ... % constant torque in x-y frame
-#    'iFunct' , 0       ... % analytical function index
-# );
-
-# Joint = struct ( ...
-#    'type'     , 'rev' , ... % joint type: rev, tran, rev-rev, rev-tran, rigid, disc, rel-rot, rel-tran
-#    'iBindex'  , 0     , ... % body index i
-#    'jBindex'  , 0     , ... % body index j
-#    'iPindex'  , 0     , ... % point Pi index
-#    'jPindex'  , 0     , ... % point Pj index
-#    'iUindex'  , 0     , ... % unit vector u_i index
-#    'jUindex'  , 0     , ... % unit vector u_j index
-#    'iFunct'   , 0     , ... % analytical function index
-#    'L' 	   , 0     , ... % constant length
-#    'R' 	   , 1     , ... % constant radius
-#    'x0'       , 0     , ... % initial condition x for disc
-#    'p0'       , 0     , ... % initial condition phi for a disc (or rigid)
-#    'd0'       , []    , ... % initial condition for d (rigid)
-#    'fix'      , 0     , ... % fix relative dof if = 1 (rev or tran)
-#    'nbody'    , 2     , ... % number of moving bodies involved
-#    'mrows'    , 2     , ... % number of rows (constraints)
-#    'rows'     , 0     , ... % row index-start
-#    'rowe'     , 0     , ... % row index-end
-#    'colis'    , 0     , ... % column index for body i-start
-#    'colie'    , 0     , ... % column index for body i-end
-#    'coljs'    , 0     , ... % column index for body j-start
-#    'colje'    , 0     , ... % column index for body j-end
-#    'lagrange' , zeros(3,1) ... % Lagrange multipliers
-# );
-
-# Unit = struct ( ...
-#    'Bindex', 0	,   ... % body index
-#    'ulocal', [1;0],   ... % u_prime; xi and eta components
-#    'u'     , [0;0],	... % x, y components
-#    'u_r'   , [0;0],	... % vector u rotated
-#    'u_d'   , [0;0]    ... % u_dot
-# );
-
-#  =========================================================================
 #  -------------------------------------------------------------------------
 class DapMainC:
     """Instantiated when the 'solve' button is clicked in the task panel"""
@@ -190,7 +36,7 @@ class DapMainC:
         self.Counter = 0
 
         # We will need the solver object as well
-        self.solverObj = CAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
+        self.solverObj = FreeCAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
         
         # Set a variable to flag whether we have reached the end error-free
         # It will be available to DapSolverMod as an instance variable
@@ -198,36 +44,15 @@ class DapMainC:
 
         # Dictionary of the pointers for Dynamic calling of the Acceleration functions
         self.dictAccelerationFunctions = {
-            0: self.Revolute_Acc,
-            1: self.Translational_Acc,
-            2: self.Revolute_Revolute_Acc,
-            3: self.Translational_Revolute_Acc,
-            4: self.Rigid_Acc,
-            5: self.Disc_Acc,
-            6: self.Driven_Revolute_Acc,
-            7: self.Driven_Translational_Acc,
+            0: self.Revolute_Acc
         }
         # Dictionary of the pointers for Dynamic calling of the constraint functions
         self.dictconstraintFunctions = {
-            0: self.Revolute_constraint,
-            1: self.Translational_constraint,
-            2: self.Revolute_Revolute_constraint,
-            3: self.Translational_Revolute_constraint,
-            4: self.Rigid_constraint,
-            5: self.Disc_constraint,
-            6: self.Driven_Revolute_constraint,
-            7: self.Driven_Translational_constraint,
+            0: self.Revolute_constraint
         }
         # Dictionary of the pointers for Dynamic calling of the Jacobian functions
         self.dictJacobianFunctions = {
-            0: self.Revolute_Jacobian,
-            1: self.Translational_Jacobian,
-            2: self.Revolute_Revolute_Jacobian,
-            3: self.Translational_Revolute_Jacobian,
-            4: self.Rigid_Jacobian,
-            5: self.Disc_Jacobian,
-            6: self.Driven_Revolute_Jacobian,
-            7: self.Driven_Translational_Jacobian,
+            0: self.Revolute_Jacobian
         }
 
         # Convert joint object Dictionary to Joint Object List to ensure being ordered
@@ -273,7 +98,7 @@ class DapMainC:
 
         # Get the plane normal rotation matrix from the main DAP container
         # This will rotate all the coordinates in the model, to be in the X-Y plane
-        xyzToXYRotation = CAD.Rotation(CAD.Vector(0.0, 0.0, 1.0), DT.getActiveContainerObject().movementPlaneNormal)
+        xyzToXYRotation = FreeCAD.Rotation(FreeCAD.Vector(0.0, 0.0, 1.0), DT.getActiveContainerObject().movementPlaneNormal)
 
         # Find the global maximum number of points in any of the bodies
         # We will need this so we can initialise large enough NumPy arrays
@@ -531,144 +356,8 @@ class DapMainC:
                     # ==================================
                     jointObj.mConstraints = 1
                     jointObj.nMovBodies = 1
-
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'tran'}
-                #            Joints(Ji).mrows = 2;
-                #            Joints(Ji).nbody = 2;
-                #            Pi = Joints(Ji).iPindex;
-                #            Pj = Joints(Ji).jPindex;
-                #            Bi = Points(Pi).Bindex;
-                #            Joints(Ji).iBindex = Bi;
-                #            Bj = Points(Pj).Bindex;
-                #            Joints(Ji).jBindex = Bj;
-                #            if Joints(Ji).fix == 1
-                #                Joints(Ji).mrows = 3;
-                #                if Bi == 0
-                #                    Joints(Ji).p0 = norm(Points(Pi).rP - ...
-                #                        Bodies(Bj).r - Bodies(Bj).A*Points(Pj).sPlocal);
-                #                elseif Bj == 0
-                #                    Joints(Ji).p0 = norm(Bodies(Bi).r + ...
-                #                        Bodies(Bi).A*Points(Pi).sPlocal - Points(Pj).rP);
-                #                else
-                #                    Joints(Ji).p0 = norm(Bodies(Bi).r + ...
-                #                        Bodies(Bi).A*Points(Pi).sPlocal - ...
-                #                        Bodies(Bj).r - Bodies(Bj).A*Points(Pj).sPlocal);
-                #                end
-                #            end
-                # ==================================
-                jointObj.mConstraints = 2
-                jointObj.nMovBodies = 2
-                if jointObj.fixDof is True:
-                    jointObj.mConstraints = 3
-                    if jointObj.body_I_Index == 0:
-                        vec = (+ self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index]
-                               - self.worldNp[jointObj.body_J_Index]
-                               - self.RotMatPhiNp[jointObj.body_J_Index] @ self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
-                    elif jointObj.body_J_Index == 0:
-                        vec = (- self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-                               + self.worldNp[jointObj.body_I_Index]
-                               + self.RotMatPhiNp[jointObj.body_I_Index] @ self.pointXiEtaNp[jointObj.body_I_Index, point_i_Index])
-                    else:
-                        vec = (+ self.worldNp[jointObj.body_I_Index]
-                               + self.RotMatPhiNp[jointObj.body_I_Index] @ self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_i_Index]
-                               - self.worldNp[jointObj.body_J_Index]
-                               - self.RotMatPhiNp[jointObj.body_J_Index] @ self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
-                    jointObj.phi0 = np.sqrt(vec.dot(vec))
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Revolute-Revolute"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'rev-rev'}
-                #            Joints(Ji).mrows = 1;
-                #            Joints(Ji).nbody = 2;
-                #            Pi = Joints(Ji).iPindex;
-                #            Pj = Joints(Ji).jPindex;
-                #            Joints(Ji).iBindex = Points(Pi).Bindex;
-                #            Joints(Ji).jBindex = Points(Pj).Bindex;
-                # ==================================
-                jointObj.mConstraints = 1
-                jointObj.nMovBodies = 2
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Translation-Revolute"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'rev-tran'}
-                #            Joints(Ji).mrows = 1;
-                #            Joints(Ji).nbody = 2;
-                #            Pi = Joints(Ji).iPindex;
-                #            Pj = Joints(Ji).jPindex;
-                #            Joints(Ji).iBindex = Points(Pi).Bindex;
-                #            Joints(Ji).jBindex = Points(Pj).Bindex;
-                # ==================================
-                jointObj.mConstraints = 1
-                jointObj.nMovBodies = 2
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'rel-tran'}                                      % revised August 2022
-                #            Joints(Ji).mrows = 1; Joints(Ji).nbody = 1;        % revised August 2022
-                #            Pi = Joints(Ji).iPindex; Pj = Joints(Ji).jPindex;  % revised August 2022
-                #            Bi = Points(Pi).Bindex; Joints(Ji).iBindex = Bi;   % revised August 2022
-                #            Bj = Points(Pj).Bindex; Joints(Ji).jBindex = Bj;   % revised August 2022
-                # ==================================
-                jointObj.mConstraints = 1
-                jointObj.nMovBodies = 1
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'rigid'}
-                #            Joints(Ji).mrows = 3;
-                #            Joints(Ji).nbody = 2;
-                #            Bi = Joints(Ji).iBindex;
-                #            Bj = Joints(Ji).jBindex;
-                #            if Bi == 0
-                #                Joints(Ji).d0 = -Bodies(Bj).A'*Bodies(Bj).r;
-                #                Joints(Ji).p0 = -Bodies(Bj).p;
-                #            elseif Bj == 0
-                #                Joints(Ji).d0 = Bodies(Bi).r;
-                #                Joints(Ji).p0 = Bodies(Bi).p;
-                #            else
-                #                Joints(Ji).d0 = Bodies(Bj).A'*(Bodies(Bi).r - Bodies(Bj).r);
-                #                Joints(Ji).p0 = Bodies(Bi).p - Bodies(Bj).p;
-                #            end
-                # ==================================
-                jointObj.mConstraints = 3
-                jointObj.nMovBodies = 2
-                if jointObj.body_I_Index == 0:
-                    A = -self.RotMatPhiNp[jointObj.body_J_Index].T @ self.worldNp[jointObj.body_J_Index]
-                    jointObj.phi0 = -self.phiNp[jointObj.body_J_Index]
-                elif jointObj.body_J_Index == 0:
-                    A = self.worldNp[jointObj.body_I_Index]
-                    jointObj.phi0 = self.phiNp[jointObj.body_I_Index]
-                else:
-                    A = self.RotMatPhiNp[jointObj.body_J_Index].T @ (self.worldNp[jointObj.body_I_Index] -
-                                                                     self.worldNp[jointObj.body_J_Index])
-                    jointObj.phi0 = self.phiNp[jointObj.body_I_Index] - \
-                                    self.phiNp[jointObj.body_J_Index]
-                jointObj.d0.x = A[0]
-                jointObj.d0.y = A[1]
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY["Disc"]:
-                # ==================================
-                # Matlab Code from Nikravesh: DAP_BC
-                # ==================================
-                #        case {'disc'}
-                #            Joints(Ji).mrows = 2;
-                #            Joints(Ji).nbody = 1;
-                # ==================================
-                jointObj.mConstraints = 2
-                jointObj.nMovBodies = 1
-                radiusVector = self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                               self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_J_i_Index]
-                jointObj.Radius = np.sqrt(radiusVector.dot(radiusVector))
-                jointObj.phi0 = np.arctan2(radiusVector[1], radiusVector[0])
             else:
-                CAD.Console.PrintError("Unknown Joint Type - this should never occur"+str(jointObj.JointType)+"\n")
+                FreeCAD.Console.PrintError("Unknown Joint Type - this should never occur"+str(jointObj.JointType)+"\n")
         # Next Joint Object
 
         # Run through the joints and find if any of them use a driver function
@@ -700,7 +389,7 @@ class DapMainC:
         if self.numConstraints != 0 and self.correctInitial:
             # Correct for initial conditions consistency
             if self.correctInitialConditions() is False:
-                CAD.Console.PrintError("Initial Conditions not successfully calculated")
+                FreeCAD.Console.PrintError("Initial Conditions not successfully calculated")
                 return
 
         # Determine any redundancy between constraints
@@ -710,7 +399,7 @@ class DapMainC:
             DT.Np2D(Jacobian)
         redundant = np.linalg.matrix_rank(Jacobian)
         if redundant < self.numConstraints:
-            CAD.Console.PrintError('The constraints exhibit Redundancy\n')
+            FreeCAD.Console.PrintError('The constraints exhibit Redundancy\n')
             return
 
         # Velocity correction
@@ -969,7 +658,7 @@ class DapMainC:
             # Determine any redundancy between constraints
             redundant = np.linalg.matrix_rank(Jacobian) 
             if redundant < self.numConstraints:
-                CAD.Console.PrintError('The constraints exhibit Redundancy\n')
+                FreeCAD.Console.PrintError('The constraints exhibit Redundancy\n')
                 return False
 
             # We have successfully converged if the ||Deltaconstraint|| is very small
@@ -990,7 +679,7 @@ class DapMainC:
                 self.worldNp[bodyIndex, 1] += delta[(bodyIndex-1)*3+1]
                 self.phiNp[bodyIndex] += delta[(bodyIndex-1)*3+2]
                 
-        CAD.Console.PrintError("Newton-Raphson Correction failed to converge\n\n")
+        FreeCAD.Console.PrintError("Newton-Raphson Correction failed to converge\n\n")
         return False
     #  -------------------------------------------------------------------------
     def updatePointPositions(self):
@@ -1307,640 +996,7 @@ class DapMainC:
 
         return gammaNp
     #  =========================================================================
-    def Revolute_Revolute_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Revolute-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Revolute_Revolute_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    L = Joints(Ji).L;
-        #    u = d/L;
-        #       f = (u'*d - L)/2;
-        # ==================================
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        Length = jointObj.lengthLink
-        jointUnitVec = diff / Length
-        return np.array([(jointUnitVec.dot(diff) - Length) / 2.0])
     #  -------------------------------------------------------------------------
-    def Revolute_Revolute_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Revolute-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Revolute_Revolute_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    L = Joints(Ji).L;
-        #    u = d/L;
-        #        Di = [ u'  u'*Points(Pi).sP_r];
-        #        Dj = [-u' -u'*Points(Pj).sP_r];
-        # ==================================
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        jointUnitVec = diff / jointObj.lengthLink
-
-        JacobianHead = np.array([jointUnitVec[0], jointUnitVec[1],
-                                 jointUnitVec.dot(self.pointXYrelCoGrotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])])
-        JacobianTail = np.array([-jointUnitVec[0], -jointUnitVec[1],
-                                 -jointUnitVec.dot(self.pointXYrelCoGrotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])])
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Revolute_Revolute_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Revolute-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Revolute_Revolute_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    d_d  = Points(Pi).rP_d - Points(Pj).rP_d;
-        #
-        #    L = Joints(Ji).L;
-        #    u = d/L;
-        #    u_d = d_d/L;
-        #
-        #        f = - u_d'*d_d;
-        #    if Bi == 0
-        #        f = f + u'*s_rot(Points(Pj).sP_d)*Bodies(Bj).p_d;
-        #    elseif Bj == 0
-        #        f = f - u'*s_rot(Points(Pi).sP_d)*Bodies(Bi).p_d;
-        #    else
-        #        f = f - u'*(s_rot(Points(Pi).sP_d*Bodies(Bi).p_d - ...
-        #                          Points(Pj).sP_d*Bodies(Bj).p_d));
-        #    end
-        # ==================================
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        diffDot = self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                  self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        jointUnitVec = diff/jointObj.lengthLink
-        jointUnitVecDot = diffDot/jointObj.lengthLink
-        f = -jointUnitVecDot.dot(diffDot)
-        if jointObj.body_I_Index == 0:
-            f += jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) *
-                               self.phiDotNp[jointObj.body_J_Index])
-        elif jointObj.body_J_Index == 0:
-            f -= jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) *
-                               self.phiDotNp[jointObj.body_I_Index])
-        else:
-            f -= jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] *
-                                             self.phiDotNp[jointObj.body_I_Index] +
-                                             self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) *
-                                             self.phiDotNp[jointObj.body_J_Index])
-        return f
-    #  =========================================================================
-    def Rigid_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Rigid joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Rigid_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #
-        #    if Bi == 0
-        #        f = [ -(Bodies(Bj).r + Bodies(Bj).A*Joints(Ji).d0)
-        #              -Bodies(Bj).p - Joints(Ji).p0];
-        #    elseif Bj == 0
-        #        f = [Bodies(Bi).r - Joints(Ji).d0
-        #             Bodies(Bi).p - Joints(Ji).p0];
-        #    else
-        #        f = [Bodies(Bi).r - (Bodies(Bj).r + Bodies(Bj).A*Joints(Ji).d0)
-        #             Bodies(Bi).p - Bodies(Bj).p - Joints(Ji).p0];
-        #    end
-        # ==================================
-        if jointObj.body_I_Index == 0:
-            return np.array([-(self.worldNp[jointObj.body_J_Index] +
-                               self.RotMatPhiNp[jointObj.body_J_Index] @ DT.CADVecToNumPyF(jointObj.d0)),
-                             -self.phiNp[jointObj.body_J_Index] - jointObj.phi0])
-        elif jointObj.body_J_Index == 0:
-            return np.array([self.worldNp[jointObj.body_I_Index] - DT.CADVecToNumPyF(jointObj.d0),
-                             self.phiNp[jointObj.body_I_Index] - jointObj.phi0])
-        else:
-            return np.array([self.worldNp[jointObj.body_I_Index] -
-                             (self.worldNp[jointObj.body_J_Index] +
-                              self.RotMatPhiNp[body_J_Index] @ DT.CADVecToNumPyF(jointObj.d0)),
-                             self.phiNp[jointObj.body_I_Index] -
-                             self.phiNp[jointObj.body_J_Index] -
-                             jointObj.phi0])
-    #  -------------------------------------------------------------------------
-    def Rigid_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Rigid joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Rigid_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Bj = Joints(Ji).jBindex;
-        #
-        #    Di = eye(3);
-        #    if Bj ~= 0
-        #        Dj = [-eye(2) -s_rot(Bodies(Bj).A*Joints(Ji).d0)
-        #               0  0   -1];
-        #    end
-        # ==================================
-        JacobianHead = np.array([[1.0, 0.0, 0.0],
-                                 [0.0, 1.0, 0.0],
-                                 [0.0, 0.0, 1.0]])
-        JacobianTail = np.array([[-1.0, 0.0, 0.0],
-                                 [0.0, -1.0, 0.0],
-                                 [0.0, 0.0, -1.0]])
-        if jointObj.body_J_Index != 0:
-            tailVector = DT.Rot90NumPy(self.RotMatPhiNp[jointObj.body_J_Index] @ DT.CADVecToNumPyF(jointObj.d0))
-            JacobianTail = np.array([[-1.0, 0.0, -tailVector[0]],
-                                     [0.0, -1.0, -tailVector[1]],
-                                     [0.0, 0.0, -1.0]])
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Rigid_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Rigid joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Rigid_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Bj = Joints(Ji).jBindex;
-        #
-        #    f = [0; 0; 0];
-        #    if Bj ~= 0
-        #        f = [-Bodies(Bj).A*Joints(Ji).d0*Bodies(Bj).p_d^2; 0];
-        #
-        #    end
-        # ==================================
-        if jointObj.body_J_Index != 0:
-            tailVector = -self.RotMatPhiNp[jointObj.body_J_Index] @ (DT.CADVecToNumPyF(jointObj.d0) *
-                                                                     (self.phiDotNp[jointObj.body_J_Index]**2))
-            return np.array([tailVector[0], tailVector[1], 0.0])
-        else:
-            return np.array([0.0, 0.0, 0.0])
-    #  =========================================================================
-    def Translational_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #
-        #    uj_r = Uvectors(Joints(Ji).jUindex).u_r;
-        #    ui = Uvectors(Joints(Ji).iUindex).u;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #
-        #    f  = [uj_r'*d; uj_r'*ui];
-        #
-        #    if Joints(Ji).fix == 1
-        #        f = [f
-        #            (ui'*d - Joints(Ji).p0)/2];
-        #    end
-        # ==================================
-        jointUnitJRot = self.jointUnit_J_WorldRotNp[jointObj.JointNumber]
-        jointUnitIVec = self.jointUnit_I_WorldNp[jointObj.JointNumber]
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        if Debug:
-            DT.Mess('Translational Constraint:')
-            DT.MessNoLF('    Unit I Vector: ')
-            DT.Np1D(True, jointUnitIVec)
-            DT.MessNoLF('    Unit J Vector Rotated: ')
-            DT.Np1D(True, jointUnitJRot)
-            DT.MessNoLF('    World I: ')
-            DT.Np1D(True, self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
-            DT.MessNoLF('    World J: ')
-            DT.Np1D(True, self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
-            DT.MessNoLF('    Difference vector: ')
-            DT.Np1D(True, diff)
-
-        if jointObj.fixDof is False:
-            if Debug:
-                DT.MessNoLF('    Unit J vector Rotated . diff: ')
-                DT.Mess(jointUnitJRot.dot(diff))
-                DT.MessNoLF('    Unit J vector Rotated . Unit I Vector: ')
-                DT.Mess(jointUnitJRot.dot(jointUnitIVec))
-            return np.array([jointUnitJRot.dot(diff),
-                             jointUnitJRot.dot(jointUnitIVec)])
-        else:
-            return np.array(
-                [jointUnitJRot.dot(diff),
-                 jointUnitJRot.dot(jointUnitIVec),
-                 (jointUnitIVec.dot(diff) - jointObj.phi0) / 2])
-    #  -------------------------------------------------------------------------
-    def Translational_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    uj = Uvectors(Joints(Ji).jUindex).u;
-        #    uj_r = Uvectors(Joints(Ji).jUindex).u_r;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #
-        #        Di = [ uj_r'  uj'*Points(Pi).sP
-        #               0 0       1];
-        #        Dj = [-uj_r' -uj'*(Points(Pj).sP + d)
-        #               0 0      -1];
-        #
-        #    if Joints(Ji).fix == 1
-        #        Di = [Di
-        #              uj'  uj'*Points(Pi).sP_r];
-        #        Dj = [Dj
-        #              -uj' -uj'*Points(Pj).sP_r];
-        #    end
-        # ==================================
-        jointUnitJVec = self.jointUnit_J_WorldNp[jointObj.JointNumber]
-        jointUnitJRot = self.jointUnit_J_WorldRotNp[jointObj.JointNumber]
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-
-        if jointObj.fixDof is False:
-            JacobianHead = np.array([[jointUnitJRot[0], jointUnitJRot[1],
-                                      jointUnitJVec.dot(self.pointXYrelCoGNp[jointObj.body_I_Index, jointObj.point_I_i_Index])],
-                                     [0.0, 0.0, 1.0]])
-            JacobianTail = np.array([[-jointUnitJRot[0], -jointUnitJRot[1],
-                                      -jointUnitJVec.dot(self.pointXYrelCoGNp[jointObj.body_J_Index, jointObj.point_J_i_Index] + diff)],
-                                     [0.0, 0.0, -1.0]])
-        else:
-            JacobianHead = np.array([[jointUnitJRot[0], jointUnitJRot[1],
-                                      jointUnitJVec.dot(self.pointXYrelCoGNp[jointObj.body_I_Index, jointObj.point_I_i_Index])],
-                                     [0.0, 0.0, 1.0],
-                                     [jointUnitJVec[0], jointUnitJVec[1],
-                                      jointUnitJVec.dot(self.pointXYrelCoGrotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])]])
-            JacobianTail = np.array([[-jointUnitJRot[0], -jointUnitJRot[1],
-                                      -jointUnitJVec.dot(self.pointXYrelCoGNp[jointObj.body_J_Index, jointObj.point_J_i_Index] + diff)],
-                                     [0.0, 0.0, -1.0],
-                                     [-jointUnitJVec[0], -jointUnitJVec[1],
-                                      -jointUnitJVec.dot(self.pointXYrelCoGrotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])]])
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Translational_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #
-        #    ujd = Uvectors(Joints(Ji).jUindex).u_d;
-        #    ujd_r = s_rot(ujd);
-        #
-        #    if Bi == 0
-        #        f2 = 0;
-        #    elseif Bj == 0
-        #        f2 = 0;
-        #    else
-        #        f2 = ujd'*(Bodies(Bi).r - Bodies(Bj).r)*Bodies(Bi).p_d - ...
-        #             2*ujd_r'*(Bodies(Bi).r_d - Bodies(Bj).r_d);
-        #    end
-        #        f  = [f2; 0];
-        #
-        #    if Joints(Ji).fix == 1
-        #        d    = Points(Pi).rP - Points(Pj).rP;
-        #        d_d  = Points(Pi).rP_d - Points(Pj).rP_d;
-        #        L = Joints(Ji).p0;
-        #        u = d/L;
-        #        u_d = d_d/L;
-        #        f3 = - u_d'*d_d;
-        #        if Bi == 0
-        #            f3 = f3 + u'*s_rot(Points(Pj).sP_d)*Bodies(Bj).p_d;
-        #        elseif Bj == 0
-        #            f3 = f3 - u'*s_rot(Points(Pi).sP_d)*Bodies(Bi).p_d;
-        #        else
-        #            f3 = f3 - u'*(s_rot(Points(Pi).sP_d*Bodies(Bi).p_d - ...
-        #                                Points(Pj).sP_d*Bodies(Bj).p_d));
-        #        end
-        #        f = [f; f3];
-        #    end
-        # ==================================
-        jointUnitJDotVec = self.jointUnit_J_WorldDotNp[jointObj.JointNumber]
-        jointUnitJDotRot = DT.Rot90NumPy(jointUnitJDotVec.copy())
-        if jointObj.body_I_Index == 0:
-            f2 = 0
-        elif jointObj.body_J_Index == 0:
-            f2 = 0
-        else:
-            f2 = jointUnitJDotVec.dot(self.worldNp[jointObj.body_I_Index] -
-                                      self.worldNp[jointObj.body_J_Index]) * \
-                 self.phiDotNp[jointObj.body_I_Index] - \
-                 2 * jointUnitJDotRot.dot(self.worldDotNp[jointObj.body_I_Index] -
-                                          self.worldDotNp[jointObj.body_J_Index])
-
-        if jointObj.fixDof is False:
-            return np.array([f2, 0.0])
-        else:
-            diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                   self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-            diffDot = self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                      self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-            jointUnitVec = diff/jointObj.phi0
-            jointUnitVecDot = diffDot/jointObj.phi0
-            f3 = -jointUnitVecDot.dot(diffDot)
-            if jointObj.body_I_Index == 0:
-                f3 += jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) *
-                                       self.phiDotNp[jointObj.body_J_Index])
-            elif jointObj.body_J_Index == 0:
-                f3 -= jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) *
-                                       self.phiDotNp[jointObj.body_I_Index])
-            else:
-                f3 -= jointUnitVec.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] *
-                                                     self.phiDotNp[jointObj.body_I_Index] -
-                                                     self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index] *
-                                                     self.phiDotNp[jointObj.body_J_Index]))
-            return np.array([f2, 0.0, f3])
-    #  =========================================================================
-    def Translational_Revolute_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Translational-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_Revolute_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    ui_r = Uvectors(Joints(Ji).iUindex).u_r;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #        f = ui_r'*d - Joints(Ji).L;
-        # ==================================
-        jointUnitVecRot = self.jointUnitVecRotNp[jointObj.body_I_Index]
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        return np.array([jointUnitVecRot.dot(diff) - jointObj.lengthLink])
-    #  -------------------------------------------------------------------------
-    def Translational_Revolute_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Translational-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_Revolute_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    ui = Uvectors(Joints(Ji).iUindex).u;
-        #    ui_r = Uvectors(Joints(Ji).iUindex).u_r;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #        Di = [ ui_r'  ui'*(Points(Pi).sP - d)];
-        #        Dj = [-ui_r' -ui'*Points(Pj).sP];
-        # ==================================
-        jointUnitVec = self.jointUnit_I_WorldNp[jointObj.JointNumber]
-        jointUnitVecRot = self.jointUnit_I_WorldRotNp[jointObj.JointNumber]
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-
-        JacobianHead = np.array([jointUnitVecRot[0], jointUnitVecRot[1],
-                                 jointUnitVec.dot(self.pointXYrelCoGNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - diff)])
-        JacobianTail = np.array([-jointUnitVecRot[0], -jointUnitVecRot[1],
-                                 -jointUnitVec.dot(self.pointXYrelCoGNp[jointObj.body_J_Index, jointObj.point_J_i_Index])])
-
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Translational_Revolute_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Translational-Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Translational_Revolute_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #    ui  = Uvectors(Joints(Ji).iUindex).u;
-        #    ui_d = Uvectors(Joints(Ji).iUindex).u_d;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    d_d  = Points(Pi).rP_d - Points(Pj).rP_d;
-        #
-        #    if Bi == 0
-        #        f = ui'*Points(Pj).sP_d*Bodies(Bj).p_d;
-        #    elseif Bj == 0
-        #        f = ui_d'*(d*Bodies(Bi).p_d + 2*s_rot(d_d)) - ...
-        #            ui'*Points(Pi).sP_d*Bodies(Bi).p_d;
-        #    else
-        #        f = ui_d'*(d*Bodies(Bi).p_d + 2*s_rot(d_d)) - ...
-        #            ui'*(Points(Pi).sP_d*Bodies(Bi).p_d - ...
-        #                  Points(Pj).sP_d*Bodies(Bj).p_d);
-        #    end
-        # ==================================
-        jointUnitVec = self.jointUnit_I_WorldNp[jointObj.JointNumber]
-        jointUnitVecDot = self.jointUnit_I_WorldDotNp[jointObj.JointNumber]
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        diffDot = self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                  self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        if jointObj.body_I_Index == 0:
-            f = jointUnitVec.dot(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index] *
-                                 self.phiDotNp[jointObj.body_J_Index])
-        elif jointObj.body_J_Index == 0:
-            f = jointUnitVecDot.dot(diff * self.phiDotNp[jointObj.body_I_Index] + 2 * DT.Rot90NumPy(diffDot)) - \
-                jointUnitVec.dot(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] *
-                                 self.phiDotNp[jointObj.body_I_Index])
-        else:
-            f = jointUnitVecDot.dot(diff * self.phiDotNp[jointObj.body_I_Index] + 2 * DT.Rot90NumPy(diffDot)) - \
-                jointUnitVec.dot(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] *
-                                 self.phiDotNp[jointObj.body_I_Index] - \
-                self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index] *
-                                 self.phiDotNp[jointObj.body_J_Index])
-        return f
-    #  =========================================================================
-    def Driven_Revolute_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Driven Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Driven_Revolute_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    [fun, fun_d, fun_dd] = functs(Joints(Ji).iFunct, t);
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #
-        #    if Bi == 0
-        #        f = -Bodies(Bj).p - fun;
-        #    elseif Bj == 0
-        #        f =  Bodies(Bi).p - fun;
-        #    else
-        #        f =  Bodies(Bi).p - Bodies(Bj).p - fun;
-        #    end
-        # ==================================
-        [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-        if jointObj.body_I_Index == 0:
-            f = -self.phiNp[jointObj.body_J_Index] - func
-        elif jointObj.body_J_Index == 0:
-            f = self.phiNp[jointObj.body_I_Index] - func
-        else:
-            f = self.phiNp[jointObj.body_I_Index] - self.phiNp[jointObj.body_J_Index] - func
-        return np.array([f])
-    #  -------------------------------------------------------------------------
-    def Driven_Revolute_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Driven Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Driven_Revolute_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Di = [0 0  1];
-        #    Dj = [0 0 -1];
-        # ==================================
-        JacobianHead = np.array([0.0, 0.0, 1.0])
-        JacobianTail = np.array([0.0, 0.0, -1.0])
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Driven_Revolute_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Driven Revolute joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Driven_Revolute_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    [fun, fun_d, fun_dd] = functs(Joints(Ji).iFunct, t);
-        #    f = fun_dd;
-        [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-        return funcDotDot
-    #  =========================================================================
-    def Driven_Translational_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Driven Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Driven_Translational_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    [fun, fun_d, fun_dd] = functs(Joints(Ji).iFunct, t);
-        #        f = (d'*d - fun^2)/2;
-        # ==================================
-        [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        return np.array([(diff.dot(diff) - func ** 2) / 2])
-    #  -------------------------------------------------------------------------
-    def Driven_Translational_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Driven Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Driven_Translational_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #        Di = [ d'  d'*Points(Pi).sP_r];
-        #        Dj = [-d' -d'*Points(Pj).sP_r];
-        # ==================================
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-
-        JacobianHead = np.array([diff[0], diff[1],
-                                 diff.dot(self.pointXYrelCoGrotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])])
-        JacobianTail = np.array([-diff[0], -diff[1],
-                                 -diff.dot(self.pointXYrelCoGrotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])])
-
-        return JacobianHead, JacobianTail
-    #  -------------------------------------------------------------------------
-    def Driven_Translational_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Driven Translational joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Drven_Translational_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Pi = Joints(Ji).iPindex;
-        #    Pj = Joints(Ji).jPindex;
-        #    Bi = Joints(Ji).iBindex;
-        #    Bj = Joints(Ji).jBindex;
-        #    d  = Points(Pi).rP - Points(Pj).rP;
-        #    d_d  = Points(Pi).rP_d - Points(Pj).rP_d;
-        #    [fun, fun_d, fun_dd] = functs(Joints(Ji).iFunct, t);
-        #
-        #    f = fun*fun_dd + fun_d^2;
-        #    if Bi == 0
-        #        f = f + d'*s_rot(Points(Pj).sP_d)*Bodies(Bj).p_d;
-        #    elseif Bj == 0
-        #        f = f - d'*s_rot(Points(Pi).sP_d)*Bodies(Bi).p_d - d_d'*d_d;
-        #    else
-        #        f = f + d'*s_rot(Points(Pj).sP_d)*Bodies(Bj).p_d ...
-        #              - d'*s_rot(Points(Pi).sP_d)*Bodies(Bi).p_d - d_d'*d_d;
-        #    end
-        # ==================================
-        [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-        diff = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-               self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        diffDot = self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
-                  self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-        f = func * funcDotDot + funcDot**2
-        if jointObj.body_I_Index == 0:
-            f += diff.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])) * \
-                 self.phiDotNp[jointObj.body_J_Index]
-        elif jointObj.body_J_Index == 0:
-            f -= diff.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])) * \
-                 self.phiDotNp[jointObj.body_I_Index] + \
-                 diffDot.dot(diffDot)
-        else:
-            f += diff.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])) * \
-                 self.phiDotNp[jointObj.body_J_Index] - \
-                 diff.dot(DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])) * \
-                 self.phiDotNp[jointObj.body_I_Index] - \
-                 diffDot.dot(diffDot)
-        return f
-    #  =========================================================================
-    def Disc_constraint(self, jointObj, tick):
-        """Evaluate the constraints for a Disc joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Disc_constraint")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Bi = Joints(Ji).iBindex;
-        #    f = [(Bodies(Bi).r(2) - Joints(Ji).R)
-        #         ((Bodies(Bi).r(1) - Joints(Ji).x0) + ...
-        #           Joints(Ji).R*(Bodies(Bi).p - Joints(Ji).p0))];
-        # ==================================
-        return np.array([(self.worldNp[jointObj.body_I_Index, 1] - jointObj.Radius),
-                         ((self.worldNp[jointObj.body_I_Index, 0] - jointObj.x0) +
-                          jointObj.Radius * (self.phiNp[jointObj.body_I_Index] - jointObj.phi0))])
-    #  -------------------------------------------------------------------------
-    def Disc_Jacobian(self, jointObj):
-        """Evaluate the Jacobian for a Disc joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Disc_Jacobian")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    Di = [ 0  1  0
-        #           1  0  Joints(Ji).R];
-        JacobianHead = np.array([[0.0, 1.0, 0.0],
-                                 [1.0, 0.0, jointObj.Radius]])
-        return JacobianHead, JacobianHead
-    #  -------------------------------------------------------------------------
-    def Disc_Acc(self, jointObj, tick):
-        """Evaluate gamma for a Disc joint"""
-        if Debug:
-            DT.Mess("DapMainMod-Disc_Acc")
-        # ==================================
-        # Matlab Code from Nikravesh: DAP_BC
-        # ==================================
-        #    f = [0; 0];
-        # ==================================
-        return np.array([0.0, 0.0])
-    #  =========================================================================
     def outputResults(self, timeValues, uResults):
         if Debug:
             DT.Mess("DapMainMod-outputResults")
@@ -1948,7 +1004,7 @@ class DapMainC:
         # Compute body accelerations, Lagrange multipliers, coordinates and
         #    velocity of all points, kinetic and potential energies,
         #             at every reporting time interval
-        self.solverObj = CAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
+        self.solverObj = FreeCAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
         fileName = self.solverObj.Directory+"/"+self.solverObj.FileName+".csv"
         DapResultsFILE = open(fileName, 'w')
         numTicks = len(timeValues)
@@ -2364,9 +1420,9 @@ class DapMainC:
                 # Matlab Code from Nikravesh: DAP_BC
                 # ==================================
                 # TODO: Future implementation - not explicitly handled by Nikravesh
-                CAD.Console.PrintError("Still in development\n")
+                FreeCAD.Console.PrintError("Still in development\n")
             else:
-                CAD.Console.PrintError("Unknown Force type - this should never occur\n")
+                FreeCAD.Console.PrintError("Unknown Force type - this should never occur\n")
         # Next forceIndex
 
         # ==================================

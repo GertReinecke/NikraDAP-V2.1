@@ -1,62 +1,5 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Library General Public License for more details.               *
-# *                                                                              *
-# *   You should have received a copy of the GNU Library General Public          *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 import numpy as np
 from os import path
@@ -79,7 +22,7 @@ class CommandDapAnimationClass:
         if Debug:
             DT.Mess("CommandDapAnimationClass-GetResourcesC")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "icons", "Icon8n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon8n.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapAnimationAlias", "Do Animation"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapAnimationAlias", "Animates the motion of the bodies."),
         }
@@ -103,14 +46,14 @@ class CommandDapAnimationClass:
         if Debug:
             DT.Mess("CommandDapAnimationClass-Activated")
         # Get the identity of the DAP document (which is the active document on entry)
-        self.dapDocument = CAD.ActiveDocument
+        self.dapDocument = FreeCAD.ActiveDocument
 
         # Set an existing "Animation" document active or create it if it does not exist yet
-        if "Animation" in CAD.listDocuments():
-            CAD.setActiveDocument("Animation")
+        if "Animation" in FreeCAD.listDocuments():
+            FreeCAD.setActiveDocument("Animation")
         else:
-            CAD.newDocument("Animation")
-        self.animationDocument = CAD.ActiveDocument
+            FreeCAD.newDocument("Animation")
+        self.animationDocument = FreeCAD.ActiveDocument
 
         # Add the ground object to the animation view (and forget about it)
         groundObj = self.dapDocument.findObjects(Name="DapBody")[0]
@@ -131,7 +74,7 @@ class CommandDapAnimationClass:
             ViewProviderDapAnimateClass(animObj.ViewObject)
 
         # Request the animation window zoom to be set to fit the entire system
-        CADGui.SendMsgToActiveView("ViewFit")
+        FreeCADGui.SendMsgToActiveView("ViewFit")
 
         # Edit the parameters by calling the task dialog
         taskd = TaskPanelDapAnimateClass(
@@ -139,7 +82,7 @@ class CommandDapAnimationClass:
             self.dapDocument,
             self.animationDocument,
         )
-        CADGui.Control.showDialog(taskd)
+        FreeCADGui.Control.showDialog(taskd)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -176,7 +119,7 @@ class ViewProviderDapAnimateClass:
         """Returns the full path to the animation icon (Icon8n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapAnimateClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Gui", "Resources", "icons", "Icon8n.png")
+        return path.join(DT.getDapModulePath(), "Gui", "Resources", "Icons", "Icon8n.png")
     # -------------------------------------------------------------------------------------------------
     def attach(self, animateViewObject):
         if Debug:
@@ -211,14 +154,14 @@ class TaskPanelDapAnimateClass:
         self.animationDocument = animationDocument
 
         # Here we get the list of objects from the animation document
-        self.animationBodyObjects = CAD.ActiveDocument.Objects
+        self.animationBodyObjects = FreeCAD.ActiveDocument.Objects
 
         # Set play back period to mid-range
         self.playBackPeriod = 100  # msec
 
         # Load the Dap Animate ui form
         uiPath = path.join(path.dirname(__file__), "TaskPanelDapAnimate.ui")
-        self.form = CADGui.PySideUic.loadUi(uiPath)
+        self.form = FreeCADGui.PySideUic.loadUi(uiPath)
 
         # Define callback functions when changes are made in the dialog
         self.form.horizontalSlider.valueChanged.connect(self.moveObjects_Callback)
@@ -272,9 +215,9 @@ class TaskPanelDapAnimateClass:
         if Debug:
             DT.Mess("TaskPanelDapAnimateClass-reject")
 
-        CADGui.Control.closeDialog()
-        CAD.closeDocument(self.animationDocument.Name)
-        CAD.setActiveDocument(self.dapDocument.Name)
+        FreeCADGui.Control.closeDialog()
+        FreeCAD.closeDocument(self.animationDocument.Name)
+        FreeCAD.setActiveDocument(self.dapDocument.Name)
     #  -------------------------------------------------------------------------
     def playStart_Callback(self):
         """Start the Qt timer when the play button is pressed"""
@@ -330,9 +273,9 @@ class TaskPanelDapAnimateClass:
             X = thisTick[animationIndex*3 + 1]
             Y = thisTick[animationIndex*3 + 2]
             Phi = thisTick[animationIndex*3 + 3]
-            self.animationBodyObj[animationIndex].Placement = CAD.Placement(CAD.Vector(X, Y, 0.0),
-                                                                            CAD.Rotation(CAD.Vector(0.0, 0.0, 1.0),degrees(Phi)),
-                                                                            CAD.Vector(self.startX[animationIndex],
+            self.animationBodyObj[animationIndex].Placement = FreeCAD.Placement(FreeCAD.Vector(X, Y, 0.0),
+                                                                            FreeCAD.Rotation(FreeCAD.Vector(0.0, 0.0, 1.0),degrees(Phi)),
+                                                                            FreeCAD.Vector(self.startX[animationIndex],
                                                                                        self.startY[animationIndex],
                                                                                        0.0))
     #  -------------------------------------------------------------------------

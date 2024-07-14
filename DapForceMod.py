@@ -1,62 +1,5 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 from os import path
 #  from math import sin, cos, tan, asin, acos, atan, tanh, degrees, pi
@@ -73,7 +16,7 @@ def makeDapForce(name="DapForce"):
     if Debug:
         DT.Mess("makeDapForce")
     # Instantiate a DapForce object
-    forceObject = CAD.ActiveDocument.addObject("Part::FeaturePython", name)
+    forceObject = FreeCAD.ActiveDocument.addObject("Part::FeaturePython", name)
     DapForceClass(forceObject)
     # Instantiate the class to handle the Gui stuff
     ViewProviderDapForceClass(forceObject.ViewObject)
@@ -90,7 +33,7 @@ class CommandDapForceClass:
         if Debug:
             DT.Mess("CommandDapForceClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "icons", "Icon6n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon6n.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapForceAlias", "Add Force"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapForceAlias", "Creates and defines a force for the DAP analysis"),
         }
@@ -109,7 +52,7 @@ class CommandDapForceClass:
         # This is where we create a new empty Dap Force object
         DT.getActiveContainerObject().addObject(makeDapForce())
         # Switch on the Dap Force Task Dialog
-        CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
+        FreeCADGui.ActiveDocument.setEdit(FreeCAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -166,8 +109,8 @@ class DapForceClass:
         DT.addObjectProperty(forceObject, "Stiffness",            0.0,          "App::PropertyFloat",   "Values",     "Spring Stiffness")
         DT.addObjectProperty(forceObject, "LengthAngle0",         0.0,          "App::PropertyFloat",   "Values",     "Un-deformed Length/Angle")
         DT.addObjectProperty(forceObject, "DampingCoeff",         0.0,          "App::PropertyFloat",   "Values",     "Damping coefficient")
-        DT.addObjectProperty(forceObject, "constLocalForce",      CAD.Vector(), "App::PropertyVector",  "Values",     "Constant force in local frame")
-        DT.addObjectProperty(forceObject, "constWorldForce",      CAD.Vector(), "App::PropertyVector",  "Values",     "Constant force in x-y frame")
+        DT.addObjectProperty(forceObject, "constLocalForce",      FreeCAD.Vector(), "App::PropertyVector",  "Values",     "Constant force in local frame")
+        DT.addObjectProperty(forceObject, "constWorldForce",      FreeCAD.Vector(), "App::PropertyVector",  "Values",     "Constant force in x-y frame")
         DT.addObjectProperty(forceObject, "constTorque",          0.0,          "App::PropertyFloat",   "Values",     "Constant torque in x-y frame")
     #  -------------------------------------------------------------------------
     def dumps(self):
@@ -195,7 +138,7 @@ class ViewProviderDapForceClass:
         """Open up the TaskPanel if it is not open"""
         if Debug:
             DT.Mess("ViewProviderDapForceClass-doubleClicked")
-        Document = CADGui.getDocument(forceViewObject.Object.Document)
+        Document = FreeCADGui.getDocument(forceViewObject.Object.Document)
         if not Document.getInEdit():
             Document.setEdit(forceViewObject.Object.Name)
         return True
@@ -204,7 +147,7 @@ class ViewProviderDapForceClass:
         """Returns the full path to the force icon (Icon6n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapForceClass-getIcon")
-        return path.join(DT.getDapModulePath(), "icons", "Icon6n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "Icon6n.png")
     #  -------------------------------------------------------------------------
     def attach(self, forceViewObject):
         if Debug:
@@ -235,14 +178,14 @@ class ViewProviderDapForceClass:
         """Edit the parameters by calling the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapForceClass-setEdit")
-        CADGui.Control.showDialog(TaskPanelDapForceClass(self.forceObject))
+        FreeCADGui.Control.showDialog(TaskPanelDapForceClass(self.forceObject))
         return True
     #  -------------------------------------------------------------------------
     def unsetEdit(self, forceViewObject, mode):
         """Terminate the editing via the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapForceClass-unsetEdit")
-        CADGui.Control.closeDialog()
+        FreeCADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -282,7 +225,7 @@ class TaskPanelDapForceClass:
 
         # Load up the task panel layout definition
         uiPath = path.join(path.dirname(__file__), "TaskPanelDapForces.ui")
-        self.form = CADGui.PySideUic.loadUi(uiPath)
+        self.form = FreeCADGui.PySideUic.loadUi(uiPath)
 
         # Populate the body object dictionary with body {names : objects}
         self.bodyObjDict = DT.getDictionary("DapBody")
@@ -404,12 +347,12 @@ class TaskPanelDapForceClass:
             self.forceTaskObject.LengthAngle0 = self.form.rotSpringDampAngle.value()
             self.forceTaskObject.Stiffness = self.form.rotSpringDampStiffness.value()
         elif self.forceTaskObject.actuatorType == 7:
-            self.forceTaskObject.constWorldForce = self.form.globalForceMag.value() * CAD.Vector(self.form.globalForceX.value(), self.form.globalForceY.value(), self.form.globalForceZ.value())
+            self.forceTaskObject.constWorldForce = self.form.globalForceMag.value() * FreeCAD.Vector(self.form.globalForceX.value(), self.form.globalForceY.value(), self.form.globalForceZ.value())
         else:
-            CAD.Console.PrintError("Code for the selected force is still in development")
+            FreeCAD.Console.PrintError("Code for the selected force is still in development")
 
         # Switch off the Task panel
-        GuiDocument = CADGui.getDocument(self.forceTaskObject.Document)
+        GuiDocument = FreeCADGui.getDocument(self.forceTaskObject.Document)
         GuiDocument.resetEdit()
 
         # Validate and Clean up Gravity entries if this entry is Gravity
@@ -421,18 +364,18 @@ class TaskPanelDapForceClass:
                 # Find the first gravity force and remove it
                 # the new one will always be after it in the list
                 self.forceTaskObject.newForce = False
-                forceList = CAD.getDocument(self.forceTaskObject.Document.Name).findObjects(Name="DapForce")
+                forceList = FreeCAD.getDocument(self.forceTaskObject.Document.Name).findObjects(Name="DapForce")
                 for forceObj in forceList:
                     if forceObj.actuatorType == 0 and len(forceList) > 1:
-                        CAD.ActiveDocument.removeObject(forceObj.Name)
+                        FreeCAD.ActiveDocument.removeObject(forceObj.Name)
                         break
             # Remove this gravity entry if it is null
-            if containerObject.gravityVector == CAD.Vector(0.0, 0.0, 0.0):
-                forceList = CAD.getDocument(self.forceTaskObject.Document.Name).findObjects(Name="DapForce")
+            if containerObject.gravityVector == FreeCAD.Vector(0.0, 0.0, 0.0):
+                forceList = FreeCAD.getDocument(self.forceTaskObject.Document.Name).findObjects(Name="DapForce")
                 if len(forceList) > 0:
                     for forceObj in forceList:
                         if forceObj.actuatorType == 0:
-                            CAD.ActiveDocument.removeObject(forceObj.Name)
+                            FreeCAD.ActiveDocument.removeObject(forceObj.Name)
                             containerObject.gravityValid = False
                             break
             else:
@@ -665,7 +608,7 @@ class TaskPanelDapForceClass:
             self.form.gravityY.setChecked(False)
             self.form.gravityZ.setChecked(False)
             # Set the appropriate gravity vector
-            containerObject.gravityVector = CAD.Vector(-9810.0, 0.0, 0.0)
+            containerObject.gravityVector = FreeCAD.Vector(-9810.0, 0.0, 0.0)
         else:
             containerObject.gravityVector.x = 0.0
         if Debug:
@@ -683,7 +626,7 @@ class TaskPanelDapForceClass:
             self.form.gravityX.setChecked(False)
             self.form.gravityZ.setChecked(False)
             # Set the appropriate gravity vector
-            containerObject.gravityVector = CAD.Vector(0.0, -9810.0, 0.0)
+            containerObject.gravityVector = FreeCAD.Vector(0.0, -9810.0, 0.0)
         else:
             containerObject.gravityVector.y = 0.0
         if Debug:
@@ -701,7 +644,7 @@ class TaskPanelDapForceClass:
             self.form.gravityX.setChecked(False)
             self.form.gravityY.setChecked(False)
             # Set the appropriate gravity vector
-            containerObject.gravityVector = CAD.Vector(0.0, 0.0, -9810.0)
+            containerObject.gravityVector = FreeCAD.Vector(0.0, 0.0, -9810.0)
         else:
             containerObject.gravityVector.z = 0.0
         if Debug:
@@ -782,61 +725,3 @@ class TaskPanelDapForceClass:
         if state:
             self.Type = state
         return None
-# =============================================================================
-    def archiveUnusedForceCode(self):
-        """
-            #     vol1 = 0
-            #     vol2 = 0
-            #     if forceObject.body_I_Name != "Origin":
-            #         vol1 = Document.getObjectsByName(forceObject.body_I_Name)[0].Shape.Volume
-            #     if forceObject.body_J_Name != "Origin":
-            #         vol2 = Document.getObjectsByName(forceObject.body_J_Name)[0].Shape.Volume
-            #     if vol1 + vol2 == 0:
-            #         vol1 = 100000
-            #     scale = (vol1 + vol2) / 30000
-
-            #     spiral = document.addObject("Part::Spiral", "Spiral")
-            #     spiral.Radius = 2 * scale
-            #     spiral.Growth = r / 2
-            #     spiral.Rotations = 4
-            #     spiral.Placement.Base = CAD.Vector(0, 0, 0)
-
-            #     spiralShape = document.getObject("Spiral").Shape
-            #     forceObject.Shape = spiralShape
-
-            #     if forceObject.actuatorType == "Rotational Spring":
-            #         forceObject.ViewObject.LineColor = 0.0, 0.0, 0.0, 0.0
-            #     elif forceObject.actuatorType == "Rotational Spring Damper":
-            #         forceObject.ViewObject.LineColor = 0.0, 250.0, 20.0, 0.0
-
-            #     forceObject.Placement.Base = forceIILCS
-
-            #    document.removeObject("Spiral")
-
-            #    springLength = (forceIILCS - forceBLCS).Length
-            #    pitch = springLength / 10
-            #    radius = springLength / 10
-            #    creationAxis = CAD.Vector(0, 0, 1.0)
-
-            #      if springLength > 0:
-            #          springDirection = (forceBLCS - forceIILCS).normalize()
-            #          angle = degrees(acos(springDirection * creationAxis))
-            #          axis = creationAxis.cross(springDirection)
-            #          helix = Part.makeHelix(pitch, springLength, radius)
-            #         forceObject.Shape = helix
-            #         if forceObject.actuatorType == "Spring":
-            #             forceObject.ViewObject.LineColor = 0.0, 0.0, 0.0, 0.0
-            #         elif forceObject.actuatorType == "Linear Spring Damper":
-            #             forceObject.ViewObject.LineColor = 0.0, 250.0, 20.0, 0.0
-
-            #         # First reset the placement in case multiple recomputes are performed
-            #         #forceObject.Placement.Base = CAD.Vector(0, 0, 0)
-            #         #forceObject.Placement.Rotation = CAD.Rotation(0, 0, 0, 1)
-            #         #forceObject.Placement.rotate(CAD.Vector(0, 0, 0), axis, angle)
-            #         #forceObject.Placement.translate(forceIILCS)
-            #     else:
-            #         # An empty shape if the length is zero
-            #         forceObject.Shape = Part.Shape()
-        """
-        return
-# =============================================================================

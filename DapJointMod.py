@@ -1,62 +1,5 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
-import FreeCADGui as CADGui
+import FreeCAD
+import FreeCADGui
 
 from os import path
 import math
@@ -66,13 +9,13 @@ from pivy import coin
 
 import DapToolsMod as DT
 
-Debug = False
+Debug = True
 # =============================================================================
 def makeDapJoint(name="DapJoint"):
     """Create an empty Dap Joint Object"""
     if Debug:
         DT.Mess("makeDapJoint")
-    jointObject = CAD.ActiveDocument.addObject("Part::FeaturePython", name)
+    jointObject = FreeCAD.ActiveDocument.addObject("Part::FeaturePython", name)
     # Instantiate a DapJoint object
     DapJointClass(jointObject)
     # Instantiate the class to handle the Gui stuff
@@ -103,7 +46,7 @@ class CommandDapJointClass:
         if Debug:
             DT.Mess("CommandDapJointClass-GetResourcesC")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "icons", "Icon4n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon4n.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapJointAlias", "Add Joint"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapJointAlias", "Creates and defines a joint for the DAP analysis."),
         }
@@ -122,7 +65,7 @@ class CommandDapJointClass:
         # This is where we create a new empty Dap joint object
         DT.getActiveContainerObject().addObject(makeDapJoint())
         # Switch on the Dap Joint Task Dialog
-        CADGui.ActiveDocument.setEdit(CAD.ActiveDocument.ActiveObject.Name)
+        FreeCADGui.ActiveDocument.setEdit(FreeCAD.ActiveDocument.ActiveObject.Name)
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -201,9 +144,9 @@ class DapJointClass:
         DT.addObjectProperty(jointObject, "endDerivativeDriveFunc", 0.0, "App::PropertyFloat", "Driver", "Drive Func derivative at end")
         DT.addObjectProperty(jointObject, "lengthLink", 0.0, "App::PropertyFloat", "Starting Values", "Link length")
         DT.addObjectProperty(jointObject, "Radius", 0.0, "App::PropertyFloat", "Starting Values", "Disc Radius")
-        DT.addObjectProperty(jointObject, "world0", CAD.Vector(), "App::PropertyVector", "Starting Values",  "Initial condition for disc")
+        DT.addObjectProperty(jointObject, "world0", FreeCAD.Vector(), "App::PropertyVector", "Starting Values",  "Initial condition for disc")
         DT.addObjectProperty(jointObject, "phi0", 0.0, "App::PropertyFloat", "Starting Values", "Initial condition for disc")
-        DT.addObjectProperty(jointObject, "d0", CAD.Vector(), "App::PropertyVector", "Starting Values", "Initial condition (Rigid)")
+        DT.addObjectProperty(jointObject, "d0", FreeCAD.Vector(), "App::PropertyVector", "Starting Values", "Initial condition (Rigid)")
 
         DT.addObjectProperty(jointObject, "nMovBodies", -1, "App::PropertyInteger", "Bodies & constraints", "Number of moving bodies involved")
         DT.addObjectProperty(jointObject, "mConstraints", -1, "App::PropertyInteger", "Bodies & constraints", "Number of rows (constraints)")
@@ -211,13 +154,9 @@ class DapJointClass:
         DT.addObjectProperty(jointObject, "rowEnd", -1, "App::PropertyInteger", "Bodies & constraints", "Row ending index")
     #  -------------------------------------------------------------------------
     def dumps(self):
-        if Debug:
-            DT.Mess("DapJointClass-dumps")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
-        if Debug:
-            DT.Mess("DapJointClass-loads")
         if state:
             self.Type = state
         return None
@@ -236,7 +175,7 @@ class ViewProviderDapJointClass:
         """Open up the TaskPanel if it is not open"""
         if Debug:
             DT.Mess("ViewProviderDapJointClass-doubleClicked")
-        Document = CADGui.getDocument(jointViewObject.Object.Document)
+        Document = FreeCADGui.getDocument(jointViewObject.Object.Document)
         if not Document.getInEdit():
             Document.setEdit(jointViewObject.Object.Name)
         return True
@@ -245,7 +184,7 @@ class ViewProviderDapJointClass:
         """Returns the full path to the joint icon (Icon4n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapJointClass-getIcon")
-        return path.join(DT.getDapModulePath(), "icons", "Icon4n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "Icon4n.png")
     #  -------------------------------------------------------------------------
     def attach(self, jointViewObject):
         if Debug:
@@ -276,14 +215,14 @@ class ViewProviderDapJointClass:
         """Edit the parameters by calling the task dialog"""
         if Debug:
             DT.Mess("ViewProviderDapJointClass-setEdit")
-        CADGui.Control.showDialog(TaskPanelDapJointClass(self.jointObject))
+        FreeCADGui.Control.showDialog(TaskPanelDapJointClass(self.jointObject))
         return True
     #  -------------------------------------------------------------------------
     def unsetEdit(self, jointViewObject, mode):
         """We have finished with the task dialog so close it"""
         if Debug:
             DT.Mess("ViewProviderDapJointClass-unsetEdit")
-        CADGui.Control.closeDialog()
+        FreeCADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -318,7 +257,7 @@ class TaskPanelDapJointClass:
 
         # Load up the Task panel dialog definition file
         ui_path = path.join(path.dirname(__file__), "TaskPanelDapJoints.ui")
-        self.form = CADGui.PySideUic.loadUi(ui_path)
+        self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Populate the body object dictionary with body {names : objects}
         self.bodyObjDict = DT.getDictionary("DapBody")
@@ -349,13 +288,6 @@ class TaskPanelDapJointClass:
         if self.jointTaskObject.FunctType == -1:
             # We hide all equations
             self.hideAllEquationsF()
-            # Switch off all Radio Buttons
-            # self.form.radioButtonA.setVisible(False)
-            # self.form.radioButtonB.setVisible(False)
-            # self.form.radioButtonC.setVisible(False)
-            # self.form.radioButtonD.setVisible(False)
-            # self.form.radioButtonE.setVisible(False)
-            # self.form.radioButtonF.setVisible(False)
             self.form.radioButtonA.setChecked(False)
             self.form.radioButtonB.setChecked(False)
             self.form.radioButtonC.setChecked(False)
@@ -379,18 +311,6 @@ class TaskPanelDapJointClass:
                 self.form.radioButtonE.setChecked(True)
             elif jointTaskObject.FunctType == 5:
                 self.form.radioButtonF.setChecked(True)
-            # if jointTaskObject.FunctType == 0:
-            #     self.form.radioButtonA.setVisible(True)
-            # elif jointTaskObject.FunctType == 1:
-            #     self.form.radioButtonB.setVisible(True)
-            # elif jointTaskObject.FunctType == 2:
-            #     self.form.radioButtonC.setVisible(True)
-            # elif jointTaskObject.FunctType == 3:
-            #     self.form.radioButtonD.setVisible(True)
-            # elif jointTaskObject.FunctType == 4:
-            #     self.form.radioButtonE.setVisible(True)
-            # elif jointTaskObject.FunctType == 5:
-            #     self.form.radioButtonF.setVisible(True)
 
         # Connect changes to the respective Callback functions
         self.form.jointType.currentIndexChanged.connect(self.jointType_Changed_Callback)
@@ -437,14 +357,11 @@ class TaskPanelDapJointClass:
 
         self.form.jointType.setCurrentIndex(jointTaskObject.JointType + 1)
 
-        # self.form.body1_2B2P.Index() = jointTaskObject.body_I_Index + 1
-        # self.form.body2_2B2P.currentIndex(jointTaskObject.body_J_Index + 1)
-
         # Copy over the current driver function parameters to the form in case we need them
         self.parmsToFormF()
 
         # Make the jointTaskObject "Observed" when the cursor is on it / it is selected
-        CADGui.Selection.addObserver(jointTaskObject)
+        FreeCADGui.Selection.addObserver(jointTaskObject)
     #  -------------------------------------------------------------------------
     def accept(self):
         """Run when we press the OK button"""
@@ -452,9 +369,7 @@ class TaskPanelDapJointClass:
             DT.Mess("TaskPanelDapJointClass-accept")
 
         formJointType = self.form.jointType.currentIndex() - 1
-        if formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute"] or \
-                formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute-Revolute"] or \
-                formJointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
+        if formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute"]:
             self.jointTaskObject.point_I_j_Name = ""
             self.jointTaskObject.point_I_j_Label = ""
             self.jointTaskObject.point_I_j_Index = -1
@@ -462,22 +377,9 @@ class TaskPanelDapJointClass:
             self.jointTaskObject.point_J_j_Label = ""
             self.jointTaskObject.point_J_j_Index = -1
             # pass
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
-            pass
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation-Revolute"]:
-            self.jointTaskObject.point_J_j_Name = ""
-            self.jointTaskObject.point_J_j_Label = ""
-            self.jointTaskObject.point_J_j_Index = -1
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Disc"]:
-            self.jointTaskObject.point_J_i_Name = ""
-            self.jointTaskObject.point_J_i_Label = ""
-            self.jointTaskObject.point_J_i_Index = -1
-            self.jointTaskObject.point_J_j_Name = ""
-            self.jointTaskObject.point_J_j_Label = ""
-            self.jointTaskObject.point_J_j_Index = -1
 
         # Switch off the Task panel
-        GuiDocument = CADGui.getDocument(self.jointTaskObject.Document)
+        GuiDocument = FreeCADGui.getDocument(self.jointTaskObject.Document)
         GuiDocument.resetEdit()
 
         # Transfer parms from form to jointTaskObject
@@ -525,14 +427,6 @@ class TaskPanelDapJointClass:
     def showAllEquationsF(self):
         if Debug:
             DT.Mess("TaskPanelDapJointClass-showAllEquationsF")
-
-        # We show the options for a revolute / translation driver
-        # if self.form.jointType.currentIndex() == DT.JOINT_TYPE_DICTIONARY["Revolute"] - 1:
-        #     self.form.withRotationDriver.setVisible(True)
-        #     self.form.withRotationDriver.setEnabled(True)
-        # elif self.form.jointType.currentIndex() == DT.JOINT_TYPE_DICTIONARY["Translation"] - 1:
-        #     self.form.withTranslationDriver.setVisible(True)
-        #     self.form.withTranslationDriver.setEnabled(True)
 
         self.form.funcCoeff.setEnabled(True)
         self.form.funcCoeff.setVisible(True)
@@ -617,19 +511,7 @@ class TaskPanelDapJointClass:
             self.hideAllEquationsF()
         else:
             self.showAllEquationsF()
-            # if self.form.radioButtonA.isChecked():
-            #     self.jointTaskObject.FunctType = 0
 
-            # elif self.form.radioButtonB.isChecked():
-            #     self.jointTaskObject.FunctType = 1
-            # elif self.form.radioButtonC.isChecked():
-            #     self.jointTaskObject.FunctType = 2
-            # elif self.form.radioButtonD.isChecked():
-            #     self.jointTaskObject.FunctType = 3
-            # elif self.form.radioButtonE.isChecked():
-            #     self.jointTaskObject.FunctType = 4
-            # elif self.form.radioButtonF.isChecked():
-            #     self.jointTaskObject.FunctType = 5
     #  -------------------------------------------------------------------------
     def withTranslationDriver_Changed_Callback(self):
         if self.form.withTranslationDriver.isChecked() == False:
@@ -689,42 +571,7 @@ class TaskPanelDapJointClass:
             self.form.withTranslationDriver.setVisible(False)
             self.form.withTranslationDriver.setEnabled(False)
             # self.hideAllEquationsF()
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Revolute-Revolute"] or \
-                formJointType == DT.JOINT_TYPE_DICTIONARY["Rigid"]:
-            # initComboInFormF(self.form.body1_2B2P, self.bodyLabels, -1)
-            # initComboInFormF(self.form.body2_2B2P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body1_2B2P, self.bodyLabels, self.jointTaskObject.body_I_Index)
-            initComboInFormF(self.form.body2_2B2P, self.bodyLabels, self.jointTaskObject.body_J_Index)
-            self.form.definitionWidget.setCurrentIndex(0)
-            self.form.withRotationDriver.setVisible(False)
-            self.form.withTranslationDriver.setVisible(False)
-            self.hideAllEquationsF()
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
-            # initComboInFormF(self.form.body1_2B4P, self.bodyLabels, -1)
-            # initComboInFormF(self.form.body2_2B4P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body1_2B4P, self.bodyLabels, self.jointTaskObject.body_I_Index)
-            initComboInFormF(self.form.body2_2B4P, self.bodyLabels, self.jointTaskObject.body_J_Index)
-            self.form.definitionWidget.setCurrentIndex(1)
-            self.form.withTranslationDriver.setVisible(True)
-            self.form.withTranslationDriver.setEnabled(True)
-            self.form.withRotationDriver.setVisible(False)
-            self.form.withRotationDriver.setEnabled(False)
-            self.hideAllEquationsF()
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Translation-Revolute"]:
-            # initComboInFormF(self.form.body1_2B3P, self.bodyLabels, -1)
-            # initComboInFormF(self.form.body2_2B3P, self.bodyLabels, -1)
-            initComboInFormF(self.form.body1_2B3P, self.bodyLabels, self.jointTaskObject.body_I_Index)
-            initComboInFormF(self.form.body2_2B3P, self.bodyLabels, self.jointTaskObject.body_J_Index)
-            self.form.definitionWidget.setCurrentIndex(2)
-            self.form.withRotationDriver.setVisible(False)
-            self.form.withTranslationDriver.setVisible(False)
-            self.hideAllEquationsF()
-        elif formJointType == DT.JOINT_TYPE_DICTIONARY["Disc"]:
-            initComboInFormF(self.form.bodyDisc, self.bodyLabels, -1)
-            self.form.withRotationDriver.setVisible(False)
-            self.form.withTranslationDriver.setVisible(False)
-            self.form.definitionWidget.setCurrentIndex(5)
-            self.hideAllEquationsF()
+
     #  -------------------------------------------------------------------------
     def body_1B1P_Changed_Callback(self):
         if Debug:
@@ -920,17 +767,6 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body1_2B3P_Changed_Callback")
 
-        # bodyIndex = self.form.body1_2B3P.currentIndex() - 1
-        # self.jointTaskObject.body_I_Index = bodyIndex
-        # if bodyIndex == -1:
-        #     self.jointTaskObject.body_I_Name = ""
-        #     self.jointTaskObject.body_I_Label = ""
-        #     updateToolTipF(self.form.body1_2B3P, ['Undefined'])
-        #     initComboInFormF(self.form.vectorHead_2B3P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
-        #     initComboInFormF(self.form.vectorTail_2B3P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
-
         newBodyIndex = self.form.body1_2B3P.currentIndex() - 1
         if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
@@ -940,17 +776,6 @@ class TaskPanelDapJointClass:
             updateToolTipF(self.form.vectorTail_2B3P, ['Undefined'])
             initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
             updateToolTipF(self.form.vectorHead_2B3P, ['Undefined'])
-
-        # else:
-        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-        #     self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-        #     self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-        #     updateToolTipF(self.form.body1_2B3P, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.vectorHead_2B3P, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.vectorTail_2B3P, self.pointLabelListFirstBody)
 
         if newBodyIndex > -1:
             self.pointNameListFirstBody, self.pointLabelListFirstBody = \
@@ -977,15 +802,6 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body2_2B3P_Changed_Callback")
 
-        # bodyIndex = self.form.body2_2B3P.currentIndex() - 1
-        # self.jointTaskObject.body_J_Index = bodyIndex
-        # if bodyIndex == -1:
-        #     self.jointTaskObject.body_J_Name = ""
-        #     self.jointTaskObject.body_J_Label = ""
-        #     updateToolTipF(self.form.body2_2B3P, ['Undefined'])
-        #     initComboInFormF(self.form.point_2B3P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.point_2B3P, ['Undefined'])
-
         newBodyIndex = self.form.body2_2B3P.currentIndex() - 1
         if newBodyIndex == -1 and self.jointTaskObject.body_J_Index == -1:
             self.jointTaskObject.body_J_Name = ""
@@ -993,15 +809,6 @@ class TaskPanelDapJointClass:
             updateToolTipF(self.form.body2_2B3P, ['Undefined'])
             initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, -1)
             updateToolTipF(self.form.point_2B3P, ['Undefined'])
-
-        # else:
-        #     self.pointNameListSecondBody, self.pointLabelListSecondBody = \
-        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-        #     self.jointTaskObject.body_J_Name = self.bodyNames[bodyIndex]
-        #     self.jointTaskObject.body_J_Label = self.bodyLabels[bodyIndex]
-        #     updateToolTipF(self.form.body2_2B3P, self.pointLabelListSecondBody)
-        #     initComboInFormF(self.form.point_2B3P, self.pointLabelListSecondBody, -1)
-        #     updateToolTipF(self.form.point_2B3P, self.pointLabelListSecondBody)
 
         if newBodyIndex > -1:
             self.pointNameListSecondBody, self.pointLabelListSecondBody = \
@@ -1071,17 +878,6 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body1_2B4P_Changed_Callback")
 
-        # newBodyIndex = self.form.body1_2B4P.currentIndex() - 1
-        # self.jointTaskObject.body_I_Index = newBodyIndex
-        # if newBodyIndex == -1:
-        #     self.jointTaskObject.body_I_Name = ""
-        #     self.jointTaskObject.body_I_Label = ""
-        #     updateToolTipF(self.form.body1_2B4P, ['Undefined'])
-        #     initComboInFormF(self.form.vector1Head_2B4P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
-        #     initComboInFormF(self.form.vector1Tail_2B4P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
-
         newBodyIndex = self.form.body1_2B4P.currentIndex() - 1
         if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
@@ -1091,17 +887,6 @@ class TaskPanelDapJointClass:
             updateToolTipF(self.form.vector1Tail_2B4P, ['Undefined'])
             initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
             updateToolTipF(self.form.vector1Head_2B4P, ['Undefined'])
-
-        # else:
-        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-        #         DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
-        #     self.jointTaskObject.body_I_Name = self.bodyNames[newBodyIndex]
-        #     self.jointTaskObject.body_I_Label = self.bodyLabels[newBodyIndex]
-        #     updateToolTipF(self.form.body1_2B4P, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.vector1Head_2B4P, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.vector1Tail_2B4P, self.pointLabelListFirstBody)
 
         if newBodyIndex > -1:
             self.pointNameListFirstBody, self.pointLabelListFirstBody = \
@@ -1128,17 +913,6 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-body2_2B4P_Changed_Callback")
 
-        # newBodyIndex = self.form.body2_2B4P.currentIndex() - 1
-        # self.jointTaskObject.body_J_Index = newBodyIndex
-        # if newBodyIndex == -1:
-        #     self.jointTaskObject.body_J_Name = ""
-        #     self.jointTaskObject.body_J_Label = ""
-        #     updateToolTipF(self.form.body2_2B4P, ['Undefined'])
-        #     initComboInFormF(self.form.vector2Tail_2B4P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
-        #     initComboInFormF(self.form.vector2Head_2B4P, ['Undefined'], -1)
-        #     updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
-
         newBodyIndex = self.form.body2_2B4P.currentIndex() - 1
         if newBodyIndex == -1 and self.jointTaskObject.body_J_Index == -1:
             self.jointTaskObject.body_J_Name = ""
@@ -1148,17 +922,6 @@ class TaskPanelDapJointClass:
             updateToolTipF(self.form.vector2Tail_2B4P, ['Undefined'])
             initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
             updateToolTipF(self.form.vector2Head_2B4P, ['Undefined'])
-
-        # else:
-        #     self.pointNameListSecondBody, self.pointLabelListSecondBody = \
-        #         DT.getPointsFromBodyName(self.bodyNames[newBodyIndex], self.bodyObjDict)
-        #     self.jointTaskObject.body_J_Name = self.bodyNames[newBodyIndex]
-        #     self.jointTaskObject.body_J_Label = self.bodyLabels[newBodyIndex]
-        #     updateToolTipF(self.form.body2_2B4P, self.pointLabelListSecondBody)
-        #     initComboInFormF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody, -1)
-        #     updateToolTipF(self.form.vector2Tail_2B4P, self.pointLabelListSecondBody)
-        #     initComboInFormF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody, -1)
-        #     updateToolTipF(self.form.vector2Head_2B4P, self.pointLabelListSecondBody)
 
         if newBodyIndex > -1:
             self.pointNameListSecondBody, self.pointLabelListSecondBody = \
@@ -1245,17 +1008,6 @@ class TaskPanelDapJointClass:
         if Debug:
             DT.Mess("TaskPanelDapJointClass-bodyDisc_Changed_Callback")
 
-        # bodyIndex = self.form.bodyDisc.currentIndex() - 1
-        # self.jointTaskObject.body_I_Index = bodyIndex
-        # if bodyIndex == -1:
-        #     self.jointTaskObject.body_I_Name = ""
-        #     self.jointTaskObject.body_I_Label = ""
-        #     updateToolTipF(self.form.bodyDisc, ['Undefined'])
-        #     initComboInFormF(self.form.pointDiscCentre, ['Undefined'], -1)
-        #     updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
-        #     initComboInFormF(self.form.pointDiscRim, ['Undefined'], -1)
-        #     updateToolTipF(self.form.pointDiscRim, ['Undefined'])
-
         newBodyIndex = self.form.bodyDisc.currentIndex() - 1
         if newBodyIndex == -1 and self.jointTaskObject.body_I_Index == -1:
             self.jointTaskObject.body_I_Name = ""
@@ -1265,17 +1017,6 @@ class TaskPanelDapJointClass:
             updateToolTipF(self.form.pointDiscCentre, ['Undefined'])
             initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, -1)
             updateToolTipF(self.form.pointDiscRim, ['Undefined'])
-
-        # else:
-        #     self.pointNameListFirstBody, self.pointLabelListFirstBody = \
-        #         DT.getPointsFromBodyName(self.bodyNames[bodyIndex], self.bodyObjDict)
-        #     self.jointTaskObject.body_I_Name = self.bodyNames[bodyIndex]
-        #     self.jointTaskObject.body_I_Label = self.bodyLabels[bodyIndex]
-        #     updateToolTipF(self.form.bodyDisc, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.pointDiscCentre, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.pointDiscCentre, self.pointLabelListFirstBody)
-        #     initComboInFormF(self.form.pointDiscRim, self.pointLabelListFirstBody, -1)
-        #     updateToolTipF(self.form.pointDiscRim, self.pointLabelListFirstBody)
 
         if newBodyIndex > -1:
             self.pointNameListFirstBody, self.pointLabelListFirstBody = \
@@ -1391,41 +1132,3 @@ class TaskPanelDapJointClass:
         if state:
             self.Type = state
         return None
-# ==============================================================================
-'''elif formJointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
-    self.jointTaskObject.point_I_j_Name = ""
-    self.jointTaskObject.point_I_j_Label = ""
-    self.jointTaskObject.point_I_j_Index = -1
-    self.jointTaskObject.point_J_i_Name = ""
-    self.jointTaskObject.point_J_i_Label = ""
-    self.jointTaskObject.point_J_i_Index = -1
-    self.jointTaskObject.point_J_j_Name = ""
-    self.jointTaskObject.point_J_j_Label = ""
-    self.jointTaskObject.point_J_j_Index = -1
-elif formJointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
-    self.jointTaskObject.point_J_i_Name = ""
-    self.jointTaskObject.point_J_i_Label = ""
-    self.jointTaskObject.point_J_i_Index = -1
-    self.jointTaskObject.point_J_j_Name = ""
-    self.jointTaskObject.point_J_j_Label = ""
-    self.jointTaskObject.point_J_j_Index = -1'''
-'''elif formJointType == DT.JOINT_TYPE_DICTIONARY["Driven-Revolute"]:
-    initComboInFormF(self.form.body_1B1P, self.bodyLabels, -1)
-    self.form.definitionWidget.setCurrentIndex(3)
-    self.showAllEquationsF()
-    self.radioA_Changed_Callback()
-    self.radioB_Changed_Callback()
-    self.radioC_Changed_Callback()
-    self.radioD_Changed_Callback()
-    self.radioE_Changed_Callback()
-    self.radioF_Changed_Callback()
-elif formJointType == DT.JOINT_TYPE_DICTIONARY["Driven-Translation"]:
-    initComboInFormF(self.form.body_1B2P, self.bodyLabels, -1)
-    self.form.definitionWidget.setCurrentIndex(4)
-    self.showAllEquationsF()
-    self.radioA_Changed_Callback()
-    self.radioB_Changed_Callback()
-    self.radioC_Changed_Callback()
-    self.radioD_Changed_Callback()
-    self.radioE_Changed_Callback()
-    self.radioF_Changed_Callback()'''

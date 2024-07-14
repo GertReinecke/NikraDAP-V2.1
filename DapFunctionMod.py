@@ -1,67 +1,9 @@
-# ********************************************************************************
-# *                                                                              *
-# *   This program is free software; you can redistribute it and/or modify       *
-# *   it under the terms of the GNU Lesser General Public License (LGPL)         *
-# *   as published by the Free Software Foundation; either version 3 of          *
-# *   the License, or (at your option) any later version.                        *
-# *   for detail see the LICENCE text file.                                      *
-# *                                                                              *
-# *   This program is distributed in the hope that it will be useful,            *
-# *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                       *
-# *   See the GNU Lesser General Public License for more details.                *
-# *                                                                              *
-# *   You should have received a copy of the GNU Lesser General Public           *
-# *   License along with this program; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston,                      *
-# *   MA 02111-1307, USA                                                         *
-# *_____________________________________________________________________________ *
-# *                                                                              *
-# *        ##########################################################            *
-# *       #### Nikra-DAP FreeCAD WorkBench Revision 2.1 (c) 2024: ####           *
-# *        ##########################################################            *
-# *                                                                              *
-# *                     Authors of this workbench:                               *
-# *                   Cecil Churms <churms@gmail.com>                            *
-# *             Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                 *
-# *                                                                              *
-# *               This file is a sizeable expansion of the:                      *
-# *                "Nikra-DAP-Rev-1" workbench for FreeCAD                       *
-# *        with increased functionality and inherent code documentation          *
-# *                  by means of expanded variable naming                        *
-# *                                                                              *
-# *     Which in turn, is based on the MATLAB code Complementary to              *
-# *                  Chapters 7 and 8 of the textbook:                           *
-# *                                                                              *
-# *                     "PLANAR MULTIBODY DYNAMICS                               *
-# *         Formulation, Programming with MATLAB, and Applications"              *
-# *                          Second Edition                                      *
-# *                         by P.E. Nikravesh                                    *
-# *                          CRC Press, 2018                                     *
-# *                                                                              *
-# *     Authors of Rev-1:                                                        *
-# *            Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za>         *
-# *            Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>                  *
-# *            Dewald Hattingh (UP) <u17082006@tuks.co.za>                       *
-# *            Varnu Govender (UP) <govender.v@tuks.co.za>                       *
-# *                                                                              *
-# * Copyright (c) 2024 Cecil Churms <churms@gmail.com>                           *
-# * Copyright (c) 2024 Lukas du Plessis (UP) <lukas.duplessis@up.ac.za>          *
-# * Copyright (c) 2022 Alfred Bogaers (EX-MENTE) <alfred.bogaers@ex-mente.co.za> *
-# * Copyright (c) 2022 Dewald Hattingh (UP) <u17082006@tuks.co.za>               *
-# * Copyright (c) 2022 Varnu Govender (UP) <govender.v@tuks.co.za>               *
-# *                                                                              *
-# *             Please refer to the Documentation and README for                 *
-# *         more information regarding this WorkBench and its usage              *
-# *                                                                              *
-# ********************************************************************************
-import FreeCAD as CAD
+import FreeCAD
 import DapToolsMod as DT
-from os import path
-from math import degrees, sin, cos
+
+from math import sin, cos
 import numpy as np
-import FreeCADGui as CADGui
-from PySide import QtGui, QtCore
+
 Debug = False
 # ============================================================================
 class FunctionC:
@@ -306,7 +248,7 @@ class FunctionC:
                               Ct,
                               Cu]
         else:
-            CAD.Console.PrintError("Illegal Function Type specified\n")
+            FreeCAD.Console.PrintError("Illegal Function Type specified\n")
     #  ------------------------------------------------------------------------
     def getFofT(self, fType, t):
         """
@@ -444,11 +386,11 @@ class FunctionC:
         # ft      = C(0) + C(1) * sin(C(2) * t) + C(3) * cos(C(4) * t)
         # df_dt   =        C(1) * C(2) * cos(C(2) * t) - C(3) * C(4) * sin(C(4) * t)
         # d2f_dt2 =      - C(1) * C(2)^2 * sin(C(2) * t) - C(3) * C(4)^2 * cos(C(4) * t)
-        if tt <= self.timeStart:
+        if t <= self.timeStart:
             func_t = self.valueAtStart
             d_func_dt = 0
             d2_func_dt2 = 0
-        elif (tt > self.timeStart) and (tt < self.timeEnd):
+        elif (t > self.timeStart) and (t < self.timeEnd):
             func_t = self.ConstTypeE[0] + self.ConstTypeE[1] * sin(self.ConstTypeE[2] * t) + self.ConstTypeE[3] * cos(self.ConstTypeE[4] * t)
             d_func_dt = self.ConstTypeE[1] * self.ConstTypeE[2] * cos(self.ConstTypeE[2] * t) - self.ConstTypeE[3] * self.ConstTypeE[4] * sin(self.ConstTypeE[4] * t)
             d2_func_dt2 = -self.ConstTypeE[1] * self.ConstTypeE[2] ^ 2 * sin(self.ConstTypeE[2] * t) - self.ConstTypeE[3] * self.ConstTypeE[4] ^ 2 * cos(self.ConstTypeE[4] * t)
@@ -464,12 +406,12 @@ class FunctionC:
         #     ft      =  c(0) +  c(1)*t +  c(2)*t^2 +  c(3)*t^3 +  c(4)*t^4 + f0
         #     df_dt   =  c(5) +  c(6)*t +  c(7)*t^2 +  c(8)*t^3
         #     d2f_dt2 =  c(9) + c(10)*t + c(11)*t^2
-        if tt <= self.timeStart:
+        if t <= self.timeStart:
             func_t = self.valueAtStart
             d_func_dt = 0
             d2_func_dt2 = 0
-        elif (tt > self.timeStart) and (tt < self.timeEnd):
-            t = tt - self.timeStart
+        elif (t > self.timeStart) and (t < self.timeEnd):
+            t = t - self.timeStart
             func_t = self.ConstTypeF[0] + (self.ConstTypeF[1] + (self.ConstTypeF[2] + (self.ConstTypeF[3] + self.ConstTypeF[4] * t) * t) * t) * t + self.valueAtStart
             d_func_dt = self.ConstTypeF[5] + (self.ConstTypeF[6] + (self.ConstTypeF[7] + self.ConstTypeF[8] * t) * t) * t
             d2_func_dt2 = self.ConstTypeF[9] + (self.ConstTypeF[10] + self.ConstTypeF[11] * t) * t
