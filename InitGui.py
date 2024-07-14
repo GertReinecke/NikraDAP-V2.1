@@ -120,8 +120,8 @@ class DapWorkbench21C(Workbench):
     #  -------------------------------------------------------------------------
     def ContextMenu(self, recipient):
         """This is executed whenever the user right-clicks on screen
-        'recipient'=='view' when mouse is in the VIEW window
-        'recipient'=='tree' when mouse is in the TREE window
+        'recipient'=='View' when mouse is in the VIEW window
+        'recipient'=='Tree' when mouse is in the TREE window
         We currently do no use either flag"""
         if Debug:
             FreeCAD.Console.PrintMessage("DapWorkbenchClass-ContextMenu\n")
@@ -173,4 +173,4 @@ class DapWorkbench21C(Workbench):
 # Run when FreeCAD detects a workbench folder in its 'Mod' folder
 # Add the workbench to the list of workbenches and initialize it
 # =============================================================================
-Gui.addWorkbench(DapWorkbench21C())
+FreeCADGui.addWorkbench(DapWorkbench21C())
