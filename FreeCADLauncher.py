@@ -8,10 +8,16 @@ def close_freecad():
     Closes any running instance of FreeCAD.
     """
     if os.name == 'nt':  # For Windows
-        os.system('taskkill /f /im FreeCAD.exe')
+        try:
+            os.system('taskkill /f /im FreeCAD.exe')
+        except OSError:
+            print('FreeCAD is not running.')
     else:  # For Unix-based systems
         # This will send the SIGTERM signal to gracefully terminate FreeCAD
-        os.system('pkill FreeCAD')
+        try:
+            os.system('pkill FreeCAD')
+        except OSError:
+            print('FreeCAD is not running.')
 
 def launch_freecad(freecad_path, file_to_open=None):
     """

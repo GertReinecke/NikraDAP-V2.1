@@ -276,10 +276,6 @@ class TaskPanelDapJointClass:
             # Switch on rotation "driver function select" and switch off translation "driver function select"
             self.form.withRotationDriver.setVisible(True)
             self.form.withTranslationDriver.setVisible(False)
-        elif self.jointTaskObject.JointType == DT.JOINT_TYPE_DICTIONARY["Translation"]:
-            # Switch on translation "driver function select" and switch off rotation "driver function select"
-            self.form.withRotationDriver.setVisible(False)
-            self.form.withTranslationDriver.setVisible(True)
         else:
             # Switch off both "driver function selects"
             self.form.withRotationDriver.setVisible(False)

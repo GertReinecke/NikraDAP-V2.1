@@ -1,11 +1,9 @@
 import FreeCAD
-import FreeCADGui
 
 import os
 import numpy as np
 from scipy.integrate import solve_ivp
 import math
-import PySide
 
 import DapToolsMod as DT
 import DapFunctionMod
@@ -252,6 +250,10 @@ class DapMainC:
             bodyObj = self.bodyObjList[index]
             self.massArrayNp[(index-1)*3:index*3] = bodyObj.Mass, bodyObj.Mass, bodyObj.momentInertia
 
+        print("=================================================================================")
+        print(self.massArrayNp)
+        print("=================================================================================")
+
         # Transfer the joint unit vector coordinates to the NumPy arrays
         for jointIndex in range(self.numJoints):
             jointObj = self.jointObjList[jointIndex]
@@ -415,7 +417,7 @@ class DapMainC:
         # RHSVel = [0,0,...]   (i.e. a list of zeros)
         solution = np.linalg.solve(Jacobian @ Jacobian.T, (Jacobian @ velCorrArrayNp) - self.RHSVel(0))
         deltaVel = -Jacobian.T @ solution
-        if True:
+        if Debug:
             DT.MessNoLF("Velocity Correction Array: ")
             DT.Np1D(True, velCorrArrayNp)
             DT.MessNoLF("Velocity Correction Solution: ")
@@ -608,7 +610,7 @@ class DapMainC:
             if Debug:
                 DT.MessNoLF("Accelerations: ")
                 DT.Np1D(True, accel)
-            if True:
+            if Debug:
                 DT.MessNoLF("Lambda: ")
                 DT.Np1D(True, self.Lambda)
 
@@ -764,8 +766,6 @@ class DapMainC:
         
         # Call the applicable function which is pointed to by the constraint function dictionary
         for jointObj in self.jointObjList:
-            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
-                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             constraintNp = self.dictconstraintFunctions[jointObj.JointType](jointObj, tick)
             DeltaconstraintNp[jointObj.rowStart: jointObj.rowEnd] = constraintNp
 
@@ -779,8 +779,6 @@ class DapMainC:
         Jacobian = np.zeros((self.numConstraints, self.numMovBodiesx3,))
         for jointObj in self.jointObjList:
             # Call the applicable function which is pointed to by the Jacobian dictionary
-            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
-                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             JacobianHead, JacobianTail = self.dictJacobianFunctions[jointObj.JointType](jointObj)
             # Fill in the values in the Jacobian
             if jointObj.body_I_Index != 0:
@@ -829,8 +827,6 @@ class DapMainC:
         rhsAcc = np.zeros((self.numConstraints,), dtype=np.float64)
         # Call the applicable function which is pointed to by the Acceleration function dictionary
         for jointObj in self.jointObjList:
-            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
-                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Revolute']
             gamma = self.dictAccelerationFunctions[jointObj.JointType](jointObj, tick)
             rhsAcc[jointObj.rowStart: jointObj.rowEnd] = gamma
         return rhsAcc
@@ -857,14 +853,6 @@ class DapMainC:
         # ==================================
         # Call the applicable Driven-Revolute or Driven-Translation function where applicable
         rhsVelNp = np.zeros((self.numConstraints,), dtype=np.float64)
-        for jointObj in self.jointObjList:
-            if jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Revolute'] and jointObj.FunctType != -1:
-                jointObj.JointType = DT.JOINT_TYPE_DICTIONARY['Driven-Rotation']
-                [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-                rhsVelNp[jointObj.rowStart: jointObj.rowEnd] = func * funcDot
-            elif jointObj.JointType == DT.JOINT_TYPE_DICTIONARY['Driven-Translation']:
-                [func, funcDot, funcDotDot] = self.driverObjDict[jointObj.Name].getFofT(jointObj.FunctType, tick)
-                rhsVelNp[jointObj.rowStart: jointObj.rowEnd] = funcDot
         return rhsVelNp
     #  =========================================================================
     def Revolute_constraint(self, jointObj, tick):
