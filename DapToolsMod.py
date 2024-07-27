@@ -466,6 +466,7 @@ def computeCoGAndMomentInertia(bodyObj):
         Mess("Body moment of inertia [kg mm^2):  "+str(momentInertiaWholeBody))
         Mess("")
 
+    #
     return True
 #  -------------------------------------------------------------------------
 def DrawRotArrow(Point, LeftRight, diameter):

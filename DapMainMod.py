@@ -10,9 +10,11 @@ import DapFunctionMod
 
 Debug = False
 
+
 #  -------------------------------------------------------------------------
 class DapMainC:
     """Instantiated when the 'solve' button is clicked in the task panel"""
+
     #  -------------------------------------------------------------------------
     def __init__(self, simEnd, simDelta, Accuracy, correctInitial):
         if Debug:
@@ -24,8 +26,8 @@ class DapMainC:
         self.correctInitial = correctInitial
 
         # Store the required accuracy figures
-        self.relativeTolerance = 10**(-Accuracy-2)
-        self.absoluteTolerance = 10**(-Accuracy-4)
+        self.relativeTolerance = 10 ** (-Accuracy - 2)
+        self.absoluteTolerance = 10 ** (-Accuracy - 4)
 
         print("self.relativeTolerance", self.relativeTolerance)
         print("self.absoluteTolerance", self.absoluteTolerance)
@@ -35,7 +37,7 @@ class DapMainC:
 
         # We will need the solver object as well
         self.solverObj = FreeCAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
-        
+
         # Set a variable to flag whether we have reached the end error-free
         # It will be available to DapSolverMod as an instance variable
         self.initialised = False
@@ -44,10 +46,12 @@ class DapMainC:
         self.dictAccelerationFunctions = {
             0: self.Revolute_Acc
         }
+
         # Dictionary of the pointers for Dynamic calling of the constraint functions
         self.dictconstraintFunctions = {
             0: self.Revolute_constraint
         }
+
         # Dictionary of the pointers for Dynamic calling of the Jacobian functions
         self.dictJacobianFunctions = {
             0: self.Revolute_Jacobian
@@ -55,6 +59,7 @@ class DapMainC:
 
         # Convert joint object Dictionary to Joint Object List to ensure being ordered
         jointObjDict = DT.getDictionary("DapJoint")
+        print("Joint Obj Dict", jointObjDict)
         self.jointObjList = []
         for jointName in jointObjDict:
             self.jointObjList.append(jointObjDict[jointName])
@@ -76,6 +81,13 @@ class DapMainC:
         # Get the dictionary of dictionary of Points
         # i.e. {<body name> : {<point name> : <its index in the body object's list of points>}}
         DictionaryOfPoints = DT.getDictionaryOfBodyPoints()
+
+
+        print("=================== Body Dict =====================")
+        print(DictionaryOfPoints)
+        print("===================================================")
+
+
         # Convert to a list of point dictionaries at the same index as its parent body object
         self.pointDictList = []
         bodyIndex = 0
@@ -88,7 +100,7 @@ class DapMainC:
             self.cleanUpIndices(bodyName, bodyIndex)
             bodyIndex += 1
         self.numBodies = bodyIndex
-        self.numMovBodiesx3 = (self.numBodies-1) * 3
+        self.numMovBodiesx3 = (self.numBodies - 1) * 3
 
         # Remove any non-existent body names which are still around
         # in case a body has been deleted after joint/force definition
@@ -96,7 +108,8 @@ class DapMainC:
 
         # Get the plane normal rotation matrix from the main DAP container
         # This will rotate all the coordinates in the model, to be in the X-Y plane
-        xyzToXYRotation = FreeCAD.Rotation(FreeCAD.Vector(0.0, 0.0, 1.0), DT.getActiveContainerObject().movementPlaneNormal)
+        xyzToXYRotation = FreeCAD.Rotation(FreeCAD.Vector(0.0, 0.0, 1.0),
+                                           DT.getActiveContainerObject().movementPlaneNormal)
 
         # Find the global maximum number of points in any of the bodies
         # We will need this so we can initialise large enough NumPy arrays
@@ -107,7 +120,16 @@ class DapMainC:
         # Initialise the size of all the NumPy arrays and fill with zeros
         self.initNumPyArrays(maxNumberPoints)
 
+# region Create the body and joint objects
+        print("DAP Bodies Creation")
+        for bodyIndex in range(self.numBodies):
+            bodyObj = self.bodyObjList[bodyIndex] # This is a Part::PartFeature
+            print(f'Body{bodyIndex}', bodyObj)
+
+#region
+
         # Transfer all the 3D stuff into the NumPy arrays while doing the projection onto the X-Y plane
+        print("Number of bodies:", self.numBodies)
         for bodyIndex in range(self.numBodies):
             bodyObj = self.bodyObjList[bodyIndex]
             # Bring the body Mass, CoG, MoI and Weight up-to-date
@@ -118,6 +140,7 @@ class DapMainC:
             self.MassNp[bodyIndex] = bodyObj.Mass
             self.momentInertiaNp[bodyIndex] = bodyObj.momentInertia
             npVec = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.weightVector))
+            print("Weight Vector:", bodyObj.weightVector, npVec)
             self.WeightNp[bodyIndex] = npVec
 
             # Change the local vectors to be relative to the CoG, rather than the body origin
@@ -131,6 +154,7 @@ class DapMainC:
             self.worldRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npCoG.copy())
             # WorldDot
             npWorldDot = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.worldDot))
+            print("World dot:", bodyObj.worldDot, npWorldDot)
             self.worldDotNp[bodyIndex, 0:2] = npWorldDot
             self.worldDotRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npWorldDot.copy())
             # WorldDotDot
@@ -138,10 +162,12 @@ class DapMainC:
 
             # Transform the points from model Placement to World X-Y plane relative to the CoG
             vectorsRelativeCoG = bodyObj.pointLocals.copy()
+            print("pointLocals", bodyObj.pointLocals)
+
             for localIndex in range(len(vectorsRelativeCoG)):
                 vectorsRelativeCoG[localIndex] = xyzToXYRotation.toMatrix(). \
-                    multiply(bodyObj.world.toMatrix()). \
-                    multVec(vectorsRelativeCoG[localIndex]) - CoG
+                                                     multiply(bodyObj.world.toMatrix()). \
+                                                     multVec(vectorsRelativeCoG[localIndex]) - CoG
 
             # Take some trouble to make phi as nice an angle as possible
             # Because the user will maybe use it manually later and will appreciate more simplicity
@@ -153,6 +179,7 @@ class DapMainC:
             # The phiDot axis vector is by definition perpendicular to the movement plane,
             # so we don't have to do any rotating from the phiDot value set in bodyObj
             self.phiDotNp[bodyIndex] = bodyObj.phiDot
+            print("Phi Dot", bodyObj.phiDot)
 
             # We will now calculate the rotation matrix and use it to find the coordinates of the points
             self.RotMatPhiNp[bodyIndex] = DT.RotationMatrixNp(self.phiNp[bodyIndex])
@@ -176,9 +203,9 @@ class DapMainC:
                 self.pointWorldDotNp[bodyIndex][pointIndex] = np.zeros((1, 2))
             # Next pointIndex
         # Next bodyIndex
-
+# endregion
         # Print out what we have calculated for debugging
-        if True:
+        if Debug:
             DT.Mess("Point Dictionary: ")
             for bodyIndex in range(self.numBodies):
                 DT.Mess(self.pointDictList[bodyIndex])
@@ -232,7 +259,7 @@ class DapMainC:
             DT.Mess("")
 
         # Make an array with the respective body Mass and moment of inertia
-        # do not add the body=0 to the list because it is ground
+        # Do not add the body=0 to the list because it is ground
         # ==================================
         # Matlab Code from Nikravesh: DAP_BC
         # ==================================
@@ -248,41 +275,43 @@ class DapMainC:
         self.massArrayNp = np.zeros(self.numMovBodiesx3)
         for index in range(1, self.numBodies):
             bodyObj = self.bodyObjList[index]
-            self.massArrayNp[(index-1)*3:index*3] = bodyObj.Mass, bodyObj.Mass, bodyObj.momentInertia
-
-        print("=================================================================================")
-        print(self.massArrayNp)
-        print("=================================================================================")
+            self.massArrayNp[(index - 1) * 3:index * 3] = bodyObj.Mass, bodyObj.Mass, bodyObj.momentInertia
 
         # Transfer the joint unit vector coordinates to the NumPy arrays
         for jointIndex in range(self.numJoints):
             jointObj = self.jointObjList[jointIndex]
             # Unit vector on body I in body local coordinates
-            self.jointUnit_I_XiEtaNp[jointIndex] = DT.NormalizeNpVec(self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
-                                                                     self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
+            self.jointUnit_I_XiEtaNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
+                self.pointXiEtaNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
             # Unit vector on body I in world coordinates
-            self.jointUnit_I_WorldNp[jointIndex] = DT.NormalizeNpVec(self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
-                                                                     self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
+            self.jointUnit_I_WorldNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
+                self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
             self.jointUnit_I_WorldRotNp[jointIndex] = DT.Rot90NumPy(self.jointUnit_I_WorldNp[jointIndex].copy())
-            self.jointUnit_I_WorldDotNp[jointIndex] = DT.NormalizeNpVec(self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
-                                                                        self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
+            self.jointUnit_I_WorldDotNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_j_Index] -
+                self.pointWorldDotNp[jointObj.body_I_Index, jointObj.point_I_i_Index])
             self.jointUnit_I_WorldDotRotNp[jointIndex] = DT.Rot90NumPy(self.jointUnit_I_WorldDotNp[jointIndex].copy())
-    
+
             # Unit vector on body J in body local coordinates
-            self.jointUnit_J_XiEtaNp[jointIndex] = DT.NormalizeNpVec(self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
-                                                                     self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
+            self.jointUnit_J_XiEtaNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
+                self.pointXiEtaNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
             # Unit vector on body J in world coordinates
-            self.jointUnit_J_WorldNp[jointIndex] = DT.NormalizeNpVec(self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
-                                                                     self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
+            self.jointUnit_J_WorldNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
+                self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
             self.jointUnit_J_WorldRotNp[jointIndex] = DT.Rot90NumPy(self.jointUnit_J_WorldNp[jointIndex].copy())
-            self.jointUnit_J_WorldDotNp[jointIndex] = DT.NormalizeNpVec(self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
-                                                                        self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
+            self.jointUnit_J_WorldDotNp[jointIndex] = DT.NormalizeNpVec(
+                self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_j_Index] -
+                self.pointWorldDotNp[jointObj.body_J_Index, jointObj.point_J_i_Index])
             self.jointUnit_J_WorldDotRotNp[jointIndex] = DT.Rot90NumPy(self.jointUnit_J_WorldDotNp[jointIndex].copy())
 
             # Find the length of the link between the first point on each body - signed scalar
             unitPinInSlot = self.pointXYWorldNp[jointObj.body_I_Index, jointObj.point_I_i_Index] - \
                             self.pointXYWorldNp[jointObj.body_J_Index, jointObj.point_J_i_Index]
-            length = np.sqrt(unitPinInSlot[0]**2 + unitPinInSlot[1]**2)
+            length = np.sqrt(unitPinInSlot[0] ** 2 + unitPinInSlot[1] ** 2)
             dotProduct = self.jointUnit_I_WorldNp[jointIndex].dot(unitPinInSlot)
             if dotProduct < 0.0:
                 jointObj.lengthLink = -length
@@ -359,7 +388,8 @@ class DapMainC:
                     jointObj.mConstraints = 1
                     jointObj.nMovBodies = 1
             else:
-                FreeCAD.Console.PrintError("Unknown Joint Type - this should never occur"+str(jointObj.JointType)+"\n")
+                FreeCAD.Console.PrintError(
+                    "Unknown Joint Type - this should never occur" + str(jointObj.JointType) + "\n")
         # Next Joint Object
 
         # Run through the joints and find if any of them use a driver function
@@ -374,7 +404,8 @@ class DapMainC:
                      jointObj.startTimeDriveFunc, jointObj.endTimeDriveFunc,
                      jointObj.startValueDriveFunc, jointObj.endValueDriveFunc,
                      jointObj.endDerivativeDriveFunc,
-                     jointObj.Coeff0, jointObj.Coeff1, jointObj.Coeff2, jointObj.Coeff3, jointObj.Coeff4, jointObj.Coeff5]
+                     jointObj.Coeff0, jointObj.Coeff1, jointObj.Coeff2, jointObj.Coeff3, jointObj.Coeff4,
+                     jointObj.Coeff5]
                 )
 
         # Add up all the numbers of constraints and allocate row start and end pointers
@@ -384,10 +415,29 @@ class DapMainC:
             jointObj.rowEnd = self.numConstraints + jointObj.mConstraints
             self.numConstraints = jointObj.rowEnd
 
+        self.Lambda = []
+
         # Return with a flag to show we have reached the end of init error-free
         self.initialised = True
+
     #  -------------------------------------------------------------------------
     def MainSolve(self):
+
+        print("==================== Bodies =======================")
+        print(self.bodyObjList)
+        print("===================================================")
+
+        print("==================== Joints =======================")
+        for joint in self.jointObjList:
+            print(joint.JointType)
+            print(joint.body_I_Index)
+            print(joint.body_J_Index)
+        print("===================================================")
+
+        print("===================== Mass ========================")
+        print(self.massArrayNp)
+        print("===================================================")
+
         if self.numConstraints != 0 and self.correctInitial:
             # Correct for initial conditions consistency
             if self.correctInitialConditions() is False:
@@ -396,7 +446,7 @@ class DapMainC:
 
         # Determine any redundancy between constraints
         Jacobian = self.GetJacobianF()
-        if True:
+        if Debug:
             DT.Mess("Jacobian calculated to determine rank of solution")
             DT.Np2D(Jacobian)
         redundant = np.linalg.matrix_rank(Jacobian)
@@ -408,10 +458,10 @@ class DapMainC:
         velCorrArrayNp = np.zeros((self.numMovBodiesx3,), dtype=np.float64)
         # Move velocities to the corrections array
         for bodyIndex in range(1, self.numBodies):
-            velCorrArrayNp[(bodyIndex-1) * 3: bodyIndex*3] = \
+            velCorrArrayNp[(bodyIndex - 1) * 3: bodyIndex * 3] = \
                 self.worldDotNp[bodyIndex, 0], \
-                self.worldDotNp[bodyIndex, 1], \
-                self.phiDotNp[bodyIndex]
+                    self.worldDotNp[bodyIndex, 1], \
+                    self.phiDotNp[bodyIndex]
         # Solve for velocity at time = 0
         # Unless the joint is Driven-Revolute or Driven-Translational
         # RHSVel = [0,0,...]   (i.e. a list of zeros)
@@ -426,9 +476,9 @@ class DapMainC:
             DT.Np1D(True, deltaVel)
         # Move corrected velocities back into the system
         for bodyIndex in range(1, self.numBodies):
-            self.worldDotNp[bodyIndex, 0] += deltaVel[(bodyIndex-1)*3]
-            self.worldDotNp[bodyIndex, 1] += deltaVel[(bodyIndex-1)*3+1]
-            self.phiDotNp[bodyIndex] += deltaVel[(bodyIndex-1)*3+2]
+            self.worldDotNp[bodyIndex, 0] += deltaVel[(bodyIndex - 1) * 3]
+            self.worldDotNp[bodyIndex, 1] += deltaVel[(bodyIndex - 1) * 3 + 1]
+            self.phiDotNp[bodyIndex] += deltaVel[(bodyIndex - 1) * 3 + 2]
         # Report corrected coordinates and velocities
         if Debug:
             DT.Mess("Corrected Positions: [mm]")
@@ -446,14 +496,14 @@ class DapMainC:
         index1 = 0
         index2 = self.numMovBodiesx3
         for bodyIndex in range(1, self.numBodies):
-            uArray[index1:index1+2] = self.worldNp[bodyIndex]
-            uArray[index1+2] = self.phiNp[bodyIndex]
-            uArray[index2:index2+2] = self.worldDotNp[bodyIndex]
-            uArray[index2+2] = self.phiDotNp[bodyIndex]
+            uArray[index1:index1 + 2] = self.worldNp[bodyIndex]
+            uArray[index1 + 2] = self.phiNp[bodyIndex]
+            uArray[index2:index2 + 2] = self.worldDotNp[bodyIndex]
+            uArray[index2 + 2] = self.phiDotNp[bodyIndex]
             index1 += 3
             index2 += 3
-        if Debug:
-            DT.Mess("uArray:")
+        if True:
+            print("uArray:", uArray)
             DT.Np1D(True, uArray)
         # Set up the list of time intervals over which to integrate
         self.Tspan = np.arange(0.0, self.simEnd, self.simDelta)
@@ -498,16 +548,16 @@ class DapMainC:
         solution = solve_ivp(self.Analysis,
                              (0.0, self.simEnd),
                              uArray,
-                             t_eval=self.Tspan,
-                             rtol=self.relativeTolerance,
-                             atol=self.absoluteTolerance)
+                             t_eval=self.Tspan)#,
+                             #rtol=self.relativeTolerance,
+                             #atol=self.absoluteTolerance)
 
         # Output the positions/angles results file
         self.PosFILE = open(os.path.join(self.solverObj.Directory, "DapAnimation.csv"), 'w')
         Sol = solution.y.T
         for tick in range(len(solution.t)):
-            self.PosFILE.write(str(solution.t[tick])+" ")
-            for body in range(self.numBodies-1):
+            self.PosFILE.write(str(solution.t[tick]) + " ")
+            for body in range(self.numBodies - 1):
                 self.PosFILE.write(str(Sol[tick, body * 3]) + " ")
                 self.PosFILE.write(str(Sol[tick, body * 3 + 1]) + " ")
                 self.PosFILE.write(str(Sol[tick, body * 3 + 2]) + " ")
@@ -528,6 +578,7 @@ class DapMainC:
 
         if self.solverObj.FileName != "-":
             self.outputResults(solution.t, solution.y.T)
+
     ##########################################
     #   This is the end of the actual solution
     #    The rest are all called subroutines
@@ -536,20 +587,19 @@ class DapMainC:
     def Analysis(self, tick, uArray):
         """The Analysis function which takes a
         uArray consisting of a world 3vector and a velocity 3vector"""
-        if Debug:
-            DT.Mess("Input to 'Analysis'")
-            DT.Np1D(True, uArray)
+        if True:
+            print("t:", tick)
 
         # Unpack uArray into world coordinate and world velocity sub-arrays
         index1 = 0
         index2 = self.numMovBodiesx3
         for bodyIndex in range(1, self.numBodies):
             self.worldNp[bodyIndex, 0] = uArray[index1]
-            self.worldNp[bodyIndex, 1] = uArray[index1+1]
-            self.phiNp[bodyIndex] = uArray[index1+2]
+            self.worldNp[bodyIndex, 1] = uArray[index1 + 1]
+            self.phiNp[bodyIndex] = uArray[index1 + 2]
             self.worldDotNp[bodyIndex, 0] = uArray[index2]
-            self.worldDotNp[bodyIndex, 1] = uArray[index2+1]
-            self.phiDotNp[bodyIndex] = uArray[index2+2]
+            self.worldDotNp[bodyIndex, 1] = uArray[index2 + 1]
+            self.phiDotNp[bodyIndex] = uArray[index2 + 2]
             index1 += 3
             index2 += 3
         if Debug:
@@ -603,30 +653,27 @@ class DapMainC:
                 DT.Np1D(True, rhs)
             # Solve the JacMasJac augmented with the rhs
             solvedVector = np.linalg.solve(JacMasJac, rhs)
+
             # First half of solution are the acceleration values
             accel = solvedVector[: self.numMovBodiesx3]
             # Second half is Lambda which is reported in the output results routine
-            self.Lambda = solvedVector[self.numMovBodiesx3:]
-            if Debug:
-                DT.MessNoLF("Accelerations: ")
-                DT.Np1D(True, accel)
-            if Debug:
-                DT.MessNoLF("Lambda: ")
-                DT.Np1D(True, self.Lambda)
+            lam = solvedVector[self.numMovBodiesx3:]
+
+            self.Lambda.append(lam.flatten().tolist())
 
         # Transfer the accelerations back into the worldDotDot/phiDotDot and uDot/uDotDot Arrays
         for bodyIndex in range(1, self.numBodies):
-            accelIndex = (bodyIndex-1)*3
-            self.worldDotDotNp[bodyIndex] = accel[accelIndex], accel[accelIndex+1]
-            self.phiDotDotNp[bodyIndex] = accel[accelIndex+2]
+            accelIndex = (bodyIndex - 1) * 3
+            self.worldDotDotNp[bodyIndex] = accel[accelIndex], accel[accelIndex + 1]
+            self.phiDotDotNp[bodyIndex] = accel[accelIndex + 2]
         uDotArray = np.zeros((self.numMovBodiesx3 * 2), dtype=np.float64)
         index1 = 0
         index2 = self.numMovBodiesx3
         for bodyIndex in range(1, self.numBodies):
-            uDotArray[index1:index1+2] = self.worldDotNp[bodyIndex]
-            uDotArray[index1+2] = self.phiDotNp[bodyIndex]
-            uDotArray[index2:index2+2] = self.worldDotDotNp[bodyIndex]
-            uDotArray[index2+2] = self.phiDotDotNp[bodyIndex]
+            uDotArray[index1:index1 + 2] = self.worldDotNp[bodyIndex]
+            uDotArray[index1 + 2] = self.phiDotNp[bodyIndex]
+            uDotArray[index2:index2 + 2] = self.worldDotDotNp[bodyIndex]
+            uDotArray[index2 + 2] = self.phiDotDotNp[bodyIndex]
             index1 += 3
             index2 += 3
 
@@ -634,6 +681,7 @@ class DapMainC:
         self.Counter += 1
 
         return uDotArray
+
     #  -------------------------------------------------------------------------
     def correctInitialConditions(self):
         """This function corrects the supplied initial conditions by making
@@ -650,7 +698,7 @@ class DapMainC:
             if Debug:
                 DT.Mess("Delta constraints Result:")
                 DT.Np1D(True, Deltaconstraints)
-                
+
             # Evaluate Jacobian
             Jacobian = self.GetJacobianF()
             if Debug:
@@ -658,7 +706,7 @@ class DapMainC:
                 DT.Np2D(Jacobian)
 
             # Determine any redundancy between constraints
-            redundant = np.linalg.matrix_rank(Jacobian) 
+            redundant = np.linalg.matrix_rank(Jacobian)
             if redundant < self.numConstraints:
                 FreeCAD.Console.PrintError('The constraints exhibit Redundancy\n')
                 return False
@@ -677,12 +725,13 @@ class DapMainC:
             delta = - Jacobian.T @ solution
             # Correct the estimates
             for bodyIndex in range(1, self.numBodies):
-                self.worldNp[bodyIndex, 0] += delta[(bodyIndex-1)*3]
-                self.worldNp[bodyIndex, 1] += delta[(bodyIndex-1)*3+1]
-                self.phiNp[bodyIndex] += delta[(bodyIndex-1)*3+2]
-                
+                self.worldNp[bodyIndex, 0] += delta[(bodyIndex - 1) * 3]
+                self.worldNp[bodyIndex, 1] += delta[(bodyIndex - 1) * 3 + 1]
+                self.phiNp[bodyIndex] += delta[(bodyIndex - 1) * 3 + 2]
+
         FreeCAD.Console.PrintError("Newton-Raphson Correction failed to converge\n\n")
         return False
+
     #  -------------------------------------------------------------------------
     def updatePointPositions(self):
         for bodyIndex in range(1, self.numBodies):
@@ -707,6 +756,7 @@ class DapMainC:
                     DT.Np1D(False, self.pointXYrelCoGrotNp[bodyIndex][pointIndex])
                     DT.MessNoLF("   ")
                     DT.Np1D(True, self.pointXYWorldNp[bodyIndex][pointIndex])
+
     #  -------------------------------------------------------------------------
     def updatePointVelocities(self):
         if Debug:
@@ -720,6 +770,7 @@ class DapMainC:
         #   if forceObj.actuatorType != 0:
         #        if forceObj.body_I_Index != 0:
         #            forceObj.FUnit_I_WorldDot = DT.Rot90NumPy(forceObj.FUnit_I_World) * self.phiDotNp[forceObj.body_I_Index]
+
     #  -------------------------------------------------------------------------
     def cleanUpIndices(self, bodyName, bodyIndex):
         # Clean up Joint Indices in case the body order has been altered
@@ -734,6 +785,7 @@ class DapMainC:
                 self.forceObjList[forceNum].body_I_Index = bodyIndex
             if self.forceObjList[forceNum].body_J_Name == bodyName:
                 self.forceObjList[forceNum].body_J_Index = bodyIndex
+
     #  -------------------------------------------------------------------------
     def clearZombieBodies(self, bodyObjDict):
         # Clean up any zombie body names
@@ -755,6 +807,7 @@ class DapMainC:
                 self.forceObjList[forceNum].body_J_Name = ""
                 self.forceObjList[forceNum].body_J_Label = ""
                 self.forceObjList[forceNum].body_J_Index = 0
+
     #  =========================================================================
     def GetconstraintsF(self, tick):
         """Returns a numConstraints-long vector which contains the current deviation
@@ -763,14 +816,14 @@ class DapMainC:
             DT.Mess("DapMainMod-constraints")
 
         DeltaconstraintNp = np.zeros((self.numConstraints,), dtype=np.float64)
-        
+
         # Call the applicable function which is pointed to by the constraint function dictionary
         for jointObj in self.jointObjList:
             constraintNp = self.dictconstraintFunctions[jointObj.JointType](jointObj, tick)
             DeltaconstraintNp[jointObj.rowStart: jointObj.rowEnd] = constraintNp
 
-
         return DeltaconstraintNp
+
     #  =========================================================================
     def GetJacobianF(self):
         """Returns the Jacobian matrix numConstraints X (3 x numMovBodies)"""
@@ -782,14 +835,15 @@ class DapMainC:
             JacobianHead, JacobianTail = self.dictJacobianFunctions[jointObj.JointType](jointObj)
             # Fill in the values in the Jacobian
             if jointObj.body_I_Index != 0:
-                columnHeadStart = (jointObj.body_I_Index-1) * 3
+                columnHeadStart = (jointObj.body_I_Index - 1) * 3
                 columnHeadEnd = jointObj.body_I_Index * 3
                 Jacobian[jointObj.rowStart: jointObj.rowEnd, columnHeadStart: columnHeadEnd] = JacobianHead
             if jointObj.body_J_Index != 0:
-                columnTailStart = (jointObj.body_J_Index-1) * 3
+                columnTailStart = (jointObj.body_J_Index - 1) * 3
                 columnTailEnd = jointObj.body_J_Index * 3
                 Jacobian[jointObj.rowStart: jointObj.rowEnd, columnTailStart: columnTailEnd] = JacobianTail
         return Jacobian
+
     #  =========================================================================
     def RHSAcc(self, tick):
         """Returns a numConstraints-long vector containing gamma"""
@@ -830,6 +884,7 @@ class DapMainC:
             gamma = self.dictAccelerationFunctions[jointObj.JointType](jointObj, tick)
             rhsAcc[jointObj.rowStart: jointObj.rowEnd] = gamma
         return rhsAcc
+
     #  -------------------------------------------------------------------------
     def RHSVel(self, tick):
         if Debug:
@@ -854,6 +909,7 @@ class DapMainC:
         # Call the applicable Driven-Revolute or Driven-Translation function where applicable
         rhsVelNp = np.zeros((self.numConstraints,), dtype=np.float64)
         return rhsVelNp
+
     #  =========================================================================
     def Revolute_constraint(self, jointObj, tick):
         """Evaluate the constraints for a Revolute joint"""
@@ -907,6 +963,7 @@ class DapMainC:
                                           - self.phiNp[jointObj.body_J_Index]
                                           - jointObj.phi0)])
         return constraintNp
+
     #  -------------------------------------------------------------------------
     def Revolute_Jacobian(self, jointObj):
         """Evaluate the Jacobian for a Revolute joint"""
@@ -945,6 +1002,7 @@ class DapMainC:
                 [0.0, -1.0, -self.pointXYrelCoGrotNp[jointObj.body_J_Index, jointObj.point_J_i_Index, 1]],
                 [0.0, 0.0, -1.0]])
         return JacobianHead, JacobianTail
+
     #  -------------------------------------------------------------------------
     def Revolute_Acc(self, jointObj, tick):
         """Evaluate gamma for a Revolute joint"""
@@ -973,16 +1031,21 @@ class DapMainC:
         #    end
         # ==================================
         if jointObj.body_I_Index == 0:
-            gammaNp = DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) * self.phiDotNp[jointObj.body_J_Index]
+            gammaNp = DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) * \
+                      self.phiDotNp[jointObj.body_J_Index]
         elif jointObj.body_J_Index == 0:
-            gammaNp = -DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) * self.phiDotNp[jointObj.body_I_Index]
+            gammaNp = -DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) * \
+                      self.phiDotNp[jointObj.body_I_Index]
         else:
-            gammaNp = -DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) * self.phiDotNp[jointObj.body_I_Index] +\
-                       DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) * self.phiDotNp[jointObj.body_J_Index]
+            gammaNp = -DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_I_Index, jointObj.point_I_i_Index]) * \
+                      self.phiDotNp[jointObj.body_I_Index] + \
+                      DT.Rot90NumPy(self.pointXYrelCoGdotNp[jointObj.body_J_Index, jointObj.point_J_i_Index]) * \
+                      self.phiDotNp[jointObj.body_J_Index]
         if jointObj.fixDof:
             gammaNp = np.array([gammaNp[0], gammaNp[1], 0.0])
 
         return gammaNp
+
     #  =========================================================================
     #  -------------------------------------------------------------------------
     def outputResults(self, timeValues, uResults):
@@ -993,7 +1056,7 @@ class DapMainC:
         #    velocity of all points, kinetic and potential energies,
         #             at every reporting time interval
         self.solverObj = FreeCAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
-        fileName = self.solverObj.Directory+"/"+self.solverObj.FileName+".csv"
+        fileName = self.solverObj.Directory + "/" + self.solverObj.FileName + ".csv"
         DapResultsFILE = open(fileName, 'w')
         numTicks = len(timeValues)
 
@@ -1012,17 +1075,18 @@ class DapMainC:
                 if twice == 0:
                     VerticalHeaders.append(self.bodyObjList[bodyIndex].Label)
                     DapResultsFILE.write("Body" + str(bodyIndex))
-                    DapResultsFILE.write(" x y phi(r) phi(d) dx/dt dy/dt dphi/dt(r) dphi/dt(d) d2x/dt2 d2y/dt2 d2phi/dt2(r) d2phi/dt2(d) ")
+                    DapResultsFILE.write(
+                        " x y phi(r) phi(d) dx/dt dy/dt dphi/dt(r) dphi/dt(d) d2x/dt2 d2y/dt2 d2phi/dt2(r) d2phi/dt2(d) ")
                 else:
-                    DapResultsFILE.write(VerticalHeaders[ColumnCounter] + " -"*12 + " ")
+                    DapResultsFILE.write(VerticalHeaders[ColumnCounter] + " -" * 12 + " ")
                 ColumnCounter += 1
                 # Points Headings
                 for index in range(len(self.pointDictList[bodyIndex])):
                     if twice == 0:
                         VerticalHeaders.append(self.bodyObjList[bodyIndex].pointLabels[index])
-                        DapResultsFILE.write("Point" + str(index+1) + " x y dx/dt dy/dt ")
+                        DapResultsFILE.write("Point" + str(index + 1) + " x y dx/dt dy/dt ")
                     else:
-                        DapResultsFILE.write(VerticalHeaders[ColumnCounter] + " -"*4 + " ")
+                        DapResultsFILE.write(VerticalHeaders[ColumnCounter] + " -" * 4 + " ")
                     ColumnCounter += 1
             # Lambda Headings
             if self.numConstraints > 0:
@@ -1065,17 +1129,28 @@ class DapMainC:
         VerticalCounter = 0
         TickRange = [0]
         TickRange += range(numTicks)
+        print("===========================================================================")
+        print(TickRange[:10])
+        print("===========================================================================")
+
+        file_path = 'D:\\Universiteit\\MSS 732\\Models\\Single Pendulum\\Normal Start Point\\solvedVector.txt'
+
+        # Open the file in append mode and write the code
+        with open(file_path, 'w') as file:
+            file.write("")
+
+        self.Lambda = []
         for timeIndex in TickRange:
             tick = timeValues[timeIndex]
             ColumnCounter = 0
             potEnergy = 0
 
             # Do the analysis on the stored uResults
+            #print('u', uResults[timeIndex])
             self.Analysis(tick, uResults[timeIndex])
 
             # Write Time
-            if timeIndex != 0:
-                DapResultsFILE.write(str(tick) + " ")
+            DapResultsFILE.write(str(tick) + " ")
 
             # Write All the Bodies position, positionDot, positionDotDot
             for bodyIndex in range(1, self.numBodies):
@@ -1092,19 +1167,19 @@ class DapMainC:
 
                     ColumnCounter += 1
                     # X Y
-                    DapResultsFILE.write(str(self.worldNp[bodyIndex]*1e-3)[1:-1:] + " ")
+                    DapResultsFILE.write(str(self.worldNp[bodyIndex] * 1e-3)[1:-1:] + " ")
                     # Phi (rad)
                     DapResultsFILE.write(str(self.phiNp[bodyIndex])[1:-1:] + " ")
                     # Phi (deg)
                     DapResultsFILE.write(str(self.phiNp[bodyIndex] * 180.0 / math.pi)[1:-1:] + " ")
                     # Xdot Ydot
-                    DapResultsFILE.write(str(self.worldDotNp[bodyIndex]*1e-3)[1:-1:] + " ")
+                    DapResultsFILE.write(str(self.worldDotNp[bodyIndex] * 1e-3)[1:-1:] + " ")
                     # PhiDot (rad)
                     DapResultsFILE.write(str(self.phiDotNp[bodyIndex])[1:-1:] + " ")
                     # PhiDot (deg)
                     DapResultsFILE.write(str(self.phiDotNp[bodyIndex] * 180.0 / math.pi)[1:-1:] + " ")
                     # Xdotdot Ydotdot
-                    DapResultsFILE.write(str(self.worldDotDotNp[bodyIndex]*1e-3)[1:-1:] + " ")
+                    DapResultsFILE.write(str(self.worldDotDotNp[bodyIndex] * 1e-3)[1:-1:] + " ")
                     # PhiDotDot (rad)
                     DapResultsFILE.write(str(self.phiDotDotNp[bodyIndex])[1:-1:] + " ")
                     # PhiDotDot (deg)
@@ -1125,15 +1200,15 @@ class DapMainC:
 
                         ColumnCounter += 1
                         # Point X Y
-                        DapResultsFILE.write(str(self.pointXYWorldNp[bodyIndex, index]*1e-3)[1:-1:] + " ")
+                        DapResultsFILE.write(str(self.pointXYWorldNp[bodyIndex, index] * 1e-3)[1:-1:] + " ")
                         # Point Xdot Ydot
-                        DapResultsFILE.write(str(self.pointWorldDotNp[bodyIndex, index]*1e-3)[1:-1:] + " ")
+                        DapResultsFILE.write(str(self.pointWorldDotNp[bodyIndex, index] * 1e-3)[1:-1:] + " ")
 
             # Write the Lambdas
             if self.numConstraints > 0:
                 if timeIndex != 0:
                     # Lambda
-                    for bodyIndex in range(self.numBodies-1):
+                    for bodyIndex in range(self.numBodies - 1):
                         # Write the Body Name vertically
                         if VerticalCounter < len(VerticalHeaders[ColumnCounter]):
                             character = VerticalHeaders[ColumnCounter][VerticalCounter]
@@ -1145,13 +1220,14 @@ class DapMainC:
                             DapResultsFILE.write("- ")
 
                         ColumnCounter += 1
-                        DapResultsFILE.write(str(self.Lambda[bodyIndex*2] * 1e-3)[1:-1:] + " " + str(self.Lambda[bodyIndex*2 + 1] * 1e-3)[1:-1:] + " ")
 
+                    print(self.Lambda[timeIndex])
+                    DapResultsFILE.write(" ".join(map(str, self.Lambda[timeIndex])) + " ")
             # Compute kinetic and potential energies in Joules
             totKinEnergy = 0
             for bodyIndex in range(1, self.numBodies):
                 kinEnergy = 0.5e-6 * (
-                        (self.massArrayNp[(bodyIndex-1) * 3] *
+                        (self.massArrayNp[(bodyIndex - 1) * 3] *
                          (self.worldDotNp[bodyIndex, 0] ** 2 + self.worldDotNp[bodyIndex, 1] ** 2)) +
                         (self.massArrayNp[(bodyIndex - 1) * 3 + 2] * (self.phiDotNp[bodyIndex] ** 2)))
 
@@ -1178,7 +1254,8 @@ class DapMainC:
                 potEnergy = 0
                 if forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Gravity"]:
                     for bodyIndex in range(1, self.numBodies):
-                        potEnergy = -self.WeightNp[bodyIndex].dot(self.worldNp[bodyIndex]) * 1e-6 - self.potEnergyZeroPointNp[bodyIndex]
+                        potEnergy = -self.WeightNp[bodyIndex].dot(self.worldNp[bodyIndex]) * 1e-6 - \
+                                    self.potEnergyZeroPointNp[bodyIndex]
                         totPotEnergy += potEnergy
                         if timeIndex == 0:
                             self.potEnergyZeroPointNp[bodyIndex] = potEnergy
@@ -1196,7 +1273,7 @@ class DapMainC:
                             DapResultsFILE.write(str(potEnergy) + " ")
 
                 elif forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Spring"] or \
-                    forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Linear Spring Damper"]:
+                        forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Linear Spring Damper"]:
                     # potEnergy += 0.5 * forceObj.k * delta**2
                     pass
 
@@ -1236,6 +1313,7 @@ class DapMainC:
         # Next timeIndex
 
         DapResultsFILE.close()
+
     #  -------------------------------------------------------------------------
     def makeForceArray(self):
         if Debug:
@@ -1290,23 +1368,25 @@ class DapMainC:
                 #  end
 
                 diffNp = self.pointXYWorldNp[forceObj.body_I_Index, forceObj.point_i_Index] - \
-                       self.pointXYWorldNp[forceObj.body_J_Index, forceObj.point_j_Index]
+                         self.pointXYWorldNp[forceObj.body_J_Index, forceObj.point_j_Index]
                 diffDotNp = self.pointWorldDotNp[forceObj.body_I_Index, forceObj.point_i_Index] - \
-                       self.pointWorldDotNp[forceObj.body_J_Index, forceObj.point_j_Index]
+                            self.pointWorldDotNp[forceObj.body_J_Index, forceObj.point_j_Index]
                 length = np.sqrt(diffNp.dot(diffNp))
-                lengthDot = (diffNp.dot(diffDotNp))/length
+                lengthDot = (diffNp.dot(diffDotNp)) / length
                 delta = length - forceObj.LengthAngle0
-                unitVecNp = diffNp/length
+                unitVecNp = diffNp / length
                 # Find the component of the force in the direction of
                 # the vector between the head and the tail of the force
                 force = forceObj.Stiffness * delta + forceObj.DampingCoeff * lengthDot + forceObj.ForceMagnitude
                 forceUnitNp = unitVecNp * force
                 if forceObj.body_I_Index != 0:
                     self.sumForcesNp[forceObj.body_I_Index] -= forceUnitNp
-                    self.sumMomentsNp[forceObj.body_I_Index] -= (self.pointXYrelCoGrotNp[forceObj.body_I_Index, forceObj.point_i_Index]).dot(forceUnitNp)
+                    self.sumMomentsNp[forceObj.body_I_Index] -= (
+                    self.pointXYrelCoGrotNp[forceObj.body_I_Index, forceObj.point_i_Index]).dot(forceUnitNp)
                 if forceObj.body_J_Index != 0:
                     self.sumForcesNp[forceObj.body_J_Index] += forceUnitNp
-                    self.sumMomentsNp[forceObj.body_J_Index] += self.pointXYrelCoGrotNp[forceObj.body_J_Index, forceObj.point_j_Index].dot(forceUnitNp)
+                    self.sumMomentsNp[forceObj.body_J_Index] += self.pointXYrelCoGrotNp[
+                        forceObj.body_J_Index, forceObj.point_j_Index].dot(forceUnitNp)
             elif forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Rotational Spring"] or \
                     forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Rotational Spring Damper"]:
                 # ==================================
@@ -1373,7 +1453,8 @@ class DapMainC:
                 #        case {'flocal'}
                 #            Bi = Forces(Fi).iBindex;
                 #            Bodies(Bi).f = Bodies(Bi).f + Bodies(Bi).A*Forces(Fi).flocal;
-                self.sumForcesNp[forceObj.body_I_Index] += self.RotMatPhiNp[forceObj.body_I_Index] @ forceObj.constLocalForce
+                self.sumForcesNp[forceObj.body_I_Index] += self.RotMatPhiNp[
+                                                               forceObj.body_I_Index] @ forceObj.constLocalForce
             elif forceObj.actuatorType == DT.FORCE_TYPE_DICTIONARY["Constant Global Force"]:
                 # ==================================
                 # Matlab Code from Nikravesh: DAP_BC
@@ -1430,6 +1511,7 @@ class DapMainC:
         if Debug:
             DT.MessNoLF("Force Array:  ")
             DT.Np1D(True, self.forceArrayNp)
+
     #  =========================================================================
     def initNumPyArrays(self, maxNumPoints):
         # Initialize all the NumPy arrays with zeros
@@ -1479,11 +1561,13 @@ class DapMainC:
         self.jointUnit_J_WorldDotRotNp = np.zeros((self.numJoints, 2,), dtype=np.float64)
 
         self.forceArrayNp = np.zeros((self.numMovBodiesx3,), dtype=np.float64)
+
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
             DT.Mess("TaskPanelDapMainClass-dumps")
         return None
+
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
