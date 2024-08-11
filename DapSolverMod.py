@@ -79,6 +79,7 @@ class DapSolverClass:
         if Debug:
             DT.Mess("DapSolverClass-__init__")
         solverObject.Proxy = self
+        
         self.addPropertiesToObject(solverObject)
     #  -------------------------------------------------------------------------
     def onDocumentRestored(self, solverObject):
@@ -98,6 +99,7 @@ class DapSolverClass:
         DT.addObjectProperty(solverObject, "DapResultsValid", False, "App::PropertyBool",       "", "")
         DT.addObjectProperty(solverObject, "BodyNames",       [],    "App::PropertyStringList", "", "")
         DT.addObjectProperty(solverObject, "BodyCoG",         [],    "App::PropertyVectorList", "", "")
+        DT.addObjectProperty(solverObject, "PlaneOfMotion",   (0, 0, 1),    "App::PropertyVector", "", "")
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -227,6 +229,12 @@ class TaskPanelDapSolverClass:
         self.Accuracy = 5
         self.form.Accuracy.setValue(self.Accuracy)
         self.form.Accuracy.valueChanged.connect(self.accuracyChanged_Callback)
+
+        # Set the plane of motion
+        self.form.Accuracy.valueChanged.connect(self.accuracyChanged_Callback)
+        self.form.planeOfMotionBtn.clicked.connect(self.getPlaneOfMotion_Callback)
+        self.form.planeOfMotionName.setText(solverTaskObject.PlaneOfMotion.__str__())
+
     #  -------------------------------------------------------------------------
     def accept(self):
         """Run when we press the OK button"""
@@ -316,6 +324,30 @@ class TaskPanelDapSolverClass:
         if Debug:
             DT.Mess("TaskPanelDapSolverClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
+    #  -------------------------------------------------------------------------
+    def getPlaneOfMotion_Callback(self):
+        # self.PlaneOfMotion = 
+        # First get the selected objects
+        selected_objects = FreeCADGui.Selection.getSelectionEx()
+        if len(selected_objects) != 1:
+            print('There are more than one selected object')
+            return
+
+        selected_object = selected_objects[0]
+        sub_objects = selected_object.SubObjects
+        if len(sub_objects) != 1:
+            print('There are more than one selected face, edge, vertex')
+            return
+
+        face = sub_objects[0]
+        if face.ShapeType != 'Face':
+            print('Please select a face')
+            return
+        
+        normal = face.normalAt(0, 0)
+        self.form.planeOfMotionName.setText(normal.__str__())
+        self.solverTaskObject.PlaneOfMotion = normal
+        
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:

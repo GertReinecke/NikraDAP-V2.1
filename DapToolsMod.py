@@ -933,18 +933,60 @@ def Rot90NumPy(a):
     b[0], b[1] = -a[1], a[0]
     return b
 #  -------------------------------------------------------------------------
-def CADVecToNumPyF(CADVec):
-    if Debug:
-        Mess("CADvecToNumPyF")
+def CADVecToNumPyF(CADVec, Normal: None):
+    
+    if type(CADVec) == np.ndarray:
+        print('vec:', CADVec)
+        if len(CADVec) != 2:
+            vec = np.array([CADVec[0], CADVec[1], CADVec[2]])
+        else:
+            vec = np.array([CADVec[0], CADVec[1], 0])
+    else:
+        vec = np.array([CADVec.x, CADVec.y, CADVec.z])
+    
+    if Normal != None:
+        print('Using the Normal Vector')
+        normal = np.array([Normal.x, Normal.y, Normal.z])
+        normal = normalize(normal)
+
+        if normal[0] != 0 or normal[1] != 0:
+            plane_x = np.array([-normal[1], normal[0], 0])
+        else:
+        # If the normal vector is along z-axis, choose vectors along x and y axis
+            plane_x = np.array([1, 0, 0])
+        plane_x = normalize(plane_x)
+
+        plane_y = np.cross(normal, plane_x)
+        plane_y = normalize(plane_y)
+
+        dot_product = np.dot(vec, normal)
+        projected_point = vec - dot_product * normal
+
+        x_coord = np.dot(projected_point, plane_x)
+        y_coord = np.dot(projected_point, plane_y)
+
+        return np.array([x_coord, y_coord])
+    
     a = np.zeros((2,))
-    a[0] = CADVec.x
-    a[1] = CADVec.y
+    a[0] = vec[0]
+    a[1] = vec[1]
     return a
+
+    return np.array([vec[0], vec[1]])
+
+#  -------------------------------------------------------------------------
+def normalize(v):
+    norm = np.linalg.norm(v)
+    if norm == 0: 
+        return v
+    return v / norm
 #  -------------------------------------------------------------------------
 def nicePhiPlease(vectorsRelativeCoG):
     if Debug:
         Mess("nicePhiPlease")
 
+
+    
     # Start off with a big phi to check when a good one hasn't been found yet
     phi = 1e6
 
@@ -963,6 +1005,11 @@ def nicePhiPlease(vectorsRelativeCoG):
         if L > maxLength:
             maxLength = L
             maxVectorIndex = localIndex
+
+    if type(vectorsRelativeCoG[maxVectorIndex]) == np.ndarray:
+        phi = math.atan2(vectorsRelativeCoG[maxVectorIndex][1], vectorsRelativeCoG[maxVectorIndex][0])
+        return phi
+
     x = vectorsRelativeCoG[maxVectorIndex].x
     y = vectorsRelativeCoG[maxVectorIndex].y
     if abs(x) < 1e-8:

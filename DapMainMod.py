@@ -120,7 +120,7 @@ class DapMainC:
         # Initialise the size of all the NumPy arrays and fill with zeros
         self.initNumPyArrays(maxNumberPoints)
 
-# region Create the body and joint objects
+#region Create the body and joint objects
         print("DAP Bodies Creation")
         for bodyIndex in range(self.numBodies):
             bodyObj = self.bodyObjList[bodyIndex] # This is a Part::PartFeature
@@ -139,7 +139,11 @@ class DapMainC:
             # All Mass and moment of inertia stuff
             self.MassNp[bodyIndex] = bodyObj.Mass
             self.momentInertiaNp[bodyIndex] = bodyObj.momentInertia
-            npVec = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.weightVector))
+            
+            plane_of_motion = self.solverObj.PlaneOfMotion
+            #plane_of_motion = None
+            
+            npVec = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.weightVector), plane_of_motion)
             print("Weight Vector:", bodyObj.weightVector, npVec)
             self.WeightNp[bodyIndex] = npVec
 
@@ -149,11 +153,15 @@ class DapMainC:
 
             # World
             CoG = xyzToXYRotation.toMatrix().multVec(bodyObj.centreOfGravity)
-            npCoG = DT.CADVecToNumPyF(CoG)
+            if plane_of_motion != None:
+                npCoG = DT.CADVecToNumPyF(CoG, plane_of_motion)
+            else:
+                npCoG = DT.CADVecToNumPyF(CoG, None)
             self.worldNp[bodyIndex, 0:2] = npCoG
+            print("World NP:", self.worldNp)
             self.worldRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npCoG.copy())
             # WorldDot
-            npWorldDot = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.worldDot))
+            npWorldDot = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.worldDot), plane_of_motion)
             print("World dot:", bodyObj.worldDot, npWorldDot)
             self.worldDotNp[bodyIndex, 0:2] = npWorldDot
             self.worldDotRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npWorldDot.copy())
@@ -162,12 +170,19 @@ class DapMainC:
 
             # Transform the points from model Placement to World X-Y plane relative to the CoG
             vectorsRelativeCoG = bodyObj.pointLocals.copy()
+                        
             print("pointLocals", bodyObj.pointLocals)
 
             for localIndex in range(len(vectorsRelativeCoG)):
+                
                 vectorsRelativeCoG[localIndex] = xyzToXYRotation.toMatrix(). \
                                                      multiply(bodyObj.world.toMatrix()). \
-                                                     multVec(vectorsRelativeCoG[localIndex]) - CoG
+                                                    multVec(vectorsRelativeCoG[localIndex]) - CoG
+
+            for point in range(len(vectorsRelativeCoG)):
+                vectorsRelativeCoG[point] = DT.CADVecToNumPyF(vectorsRelativeCoG[localIndex], plane_of_motion)
+
+            print("vectorsRelativeCoG", vectorsRelativeCoG)
 
             # Take some trouble to make phi as nice an angle as possible
             # Because the user will maybe use it manually later and will appreciate more simplicity
@@ -188,7 +203,7 @@ class DapMainC:
             for pointIndex in range(len(vectorsRelativeCoG)):
                 # Point Local - vector from module body CoG to the point, in body LCS coordinates
                 # [This is what we needed phi for, to fix the orientation of the body]
-                npVec = DT.CADVecToNumPyF(vectorsRelativeCoG[pointIndex])
+                npVec = DT.CADVecToNumPyF(vectorsRelativeCoG[pointIndex], None)
                 self.pointXiEtaNp[bodyIndex, pointIndex, 0:2] = npVec @ self.RotMatPhiNp[bodyIndex]
                 # Point Vector - vector from body CoG to the point in world coordinates
                 self.pointXYrelCoGNp[bodyIndex, pointIndex, 0:2] = npVec
@@ -548,8 +563,10 @@ class DapMainC:
         solution = solve_ivp(self.Analysis,
                              (0.0, self.simEnd),
                              uArray,
-                             t_eval=self.Tspan)#,
-                             #rtol=self.relativeTolerance,
+                             t_eval=self.Tspan,
+                             #method='RK45',
+                             rtol=1e-12,
+                             atol=1e-16)
                              #atol=self.absoluteTolerance)
 
         # Output the positions/angles results file
@@ -587,8 +604,6 @@ class DapMainC:
     def Analysis(self, tick, uArray):
         """The Analysis function which takes a
         uArray consisting of a world 3vector and a velocity 3vector"""
-        if True:
-            print("t:", tick)
 
         # Unpack uArray into world coordinate and world velocity sub-arrays
         index1 = 0

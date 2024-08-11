@@ -11,14 +11,15 @@ import os
 
 class DapWorkbench21C(Workbench):
     """This class encompasses the whole NikraDAP workbench"""
-
+    
     #  -------------------------------------------------------------------------
     def __init__(self):
         """Called on startup of FreeCAD"""
         print("DapWorkbenchClass-__init__")
+        import DapToolsMod as DT
 
         # Set up the text for the DAP workbench option, the NikraDAP icon, and the tooltip
-        self.__class__.Icon = os.path.join(os.getcwd(), "Icons", "Icon1n.png")
+        self.__class__.Icon = os.path.join(DT.getDapModulePath(), "Icons", "Icon1n.png")
         self.__class__.MenuText = "NikraDAP-2.1"
         self.__class__.ToolTip = "Planar multibody dynamics workbench based on Prof. Nikravesh's DAP solver"
 
