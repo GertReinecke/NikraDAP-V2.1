@@ -9,6 +9,9 @@ import DapToolsMod as DT
 import DapMainMod
 
 Debug = False
+
+planeOfMotion2 = []
+
 # =============================================================================
 def makeDapSolver(name="DapSolver"):
     """Create a Dap Solver object"""
@@ -235,6 +238,28 @@ class TaskPanelDapSolverClass:
         self.form.planeOfMotionBtn.clicked.connect(self.getPlaneOfMotion_Callback)
         self.form.planeOfMotionName.setText(solverTaskObject.PlaneOfMotion.__str__())
 
+        # Display the plane of motion
+        from Solver.FreeCADFunctions import make_plane, quaternion_from_euler, calculate_rotation
+        import numpy as np
+        global planeOfMotion2
+
+        # Check if planeOfMotion2 has the necessary elements
+        if len(planeOfMotion2) >= 2:
+            trans = planeOfMotion2[0]
+            rot = planeOfMotion2[1]
+            print('Found existing trans, rot')
+        else:
+            trans, rot = make_plane()
+            planeOfMotion2 = [trans, rot]
+            print('Made new trans, rot')
+        
+        trans.translation.setValue(500, 0, 0)
+        ang = calculate_rotation(np.array([solverTaskObject.PlaneOfMotion.x, solverTaskObject.PlaneOfMotion.y, solverTaskObject.PlaneOfMotion.z]))
+        ang = quaternion_from_euler(ang[0], ang[1], ang[2])
+
+        print('Angle:', ang)
+        rot.rotation.setValue(ang[0], ang[1], ang[2], ang[3])
+        planeOfMotion2 = [trans, rot]
     #  -------------------------------------------------------------------------
     def accept(self):
         """Run when we press the OK button"""
