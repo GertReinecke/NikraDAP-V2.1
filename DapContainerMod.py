@@ -1,11 +1,19 @@
 import FreeCAD
+import FreeCADGui
 
 from os import path
 from PySide import QtCore
 
 import DapToolsMod as DT
 
-Debug = False
+from os import path, getcwd
+from PySide import QtGui, QtCore
+from pivy import coin
+
+import DapToolsMod as DT
+import DapMainMod
+
+Debug = True
 # =============================================================================
 def makeDapContainer(name="DapContainer"):
     """Create Dap Container FreeCAD group object"""
@@ -115,39 +123,146 @@ class DapContainerClass:
         return None
 # =============================================================================
 class ViewProviderDapContainerClass:
-    """A view provider for the DapContainer container object"""
+    """Handle the screen interface stuff for the materials dialog"""
     if Debug:
-        DT.Mess("ViewProviderDapContainerClass-CLASS")
+        FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-CLASS\n")
     #  -------------------------------------------------------------------------
     def __init__(self, containerViewObject):
         if Debug:
-            DT.Mess("ViewProviderDapContainerClass-__init__")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-__init__\n")
         containerViewObject.Proxy = self
     #  -------------------------------------------------------------------------
     def doubleClicked(self, containerViewObject):
-        """Set the container to be the active one"""
+        """Open up the TaskPanel if it is not open"""
         if Debug:
-            DT.Mess("ViewProviderDapContainerClass-doubleClicked")
-        DT.setActiveContainer(containerViewObject.Object)
-        return DT.getActiveContainerObject()
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-doubleClicked\n")
+        Document = FreeCADGui.getDocument(containerViewObject.Object.Document)
+        if not Document.getInEdit():
+            Document.setEdit(containerViewObject.Object.Name)
+        return True
     #  -------------------------------------------------------------------------
     def getIcon(self):
-        """Returns the full path to the container icon (Icon2n.png)"""
+        """Returns the full path to the container icon (Icon5n.png)"""
         if Debug:
-            DT.Mess("ViewProviderDapContainer-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon2n.png")
+            DT.Mess("ViewProviderDapMaterialClass-getIcon")
+        return path.join(DT.getDapModulePath(), "Icons", "Icon5n.png")
+    #  -------------------------------------------------------------------------
+    def attach(self, containerViewObject):
+        if Debug:
+            DT.Mess("ViewProviderDapMaterialClass-attach")
+        self.containerObject = containerViewObject.Object
+        containerViewObject.addDisplayMode(coin.SoGroup(), "Standard")
+    #  -------------------------------------------------------------------------
+    def getDisplayModes(self, containerObject):
+        if Debug:
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDisplayModes\n")
+        return []
+    #  -------------------------------------------------------------------------
+    def getDefaultDisplayMode(self):
+        if Debug:
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDefaultDisplayMode\n")
+        return "Flat Lines"
+    #  -------------------------------------------------------------------------
+    def setDisplayMode(self, mode):
+        if Debug:
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-setDisplayMode\n")
+        return mode
     #  -------------------------------------------------------------------------
     def updateData(self, obj, prop):
         return
     #  -------------------------------------------------------------------------
+    def setEdit(self, containerViewObject, mode):
+        """Edit the parameters by calling the task dialog"""
+        if Debug:
+            DT.Mess("ViewProviderDapMaterialClass-setEdit")
+        FreeCADGui.Control.showDialog(TaskPanelDapContainerClass(self.containerObject))
+        return True
+    #  -------------------------------------------------------------------------
+    def unsetEdit(self, containerViewObject, mode):
+        """Close the task dialog when we have finished using it"""
+        if Debug:
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-unsetEdit\n")
+        FreeCADGui.Control.closeDialog()
+    #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-dumps")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            DT.Mess("TaskPanelDapContainerClass-loads")
+            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-loads\n")
+        if state:
+            self.Type = state
+        return None
+# =============================================================================
+class TaskPanelDapContainerClass:
+    """Taskpanel for Executing DAP Container User Interface"""
+    if Debug:
+        DT.Mess("TaskPanelDapContainerClass-CLASS")
+    #  -------------------------------------------------------------------------
+    def __init__(self, containerTaskObject):
+        """Run on first instantiation of a TaskPanelDapContainer class"""
+        if Debug:
+            DT.Mess("TaskPanelDapContainerClass-__init__")
+
+        self.containerTaskObject = containerTaskObject
+        containerTaskObject.Proxy = self
+
+        # Load the taskDialog form information
+        ui_path = path.join(path.dirname(__file__), "TaskPanelDapContainer.ui")
+        self.form = FreeCADGui.PySideUic.loadUi(ui_path)
+
+        # Set the plane of motion
+        self.form.planeOfMotionBtn.clicked.connect(self.getPlaneOfMotion_Callback)
+        self.form.planeOfMotionName.setText(self.containerTaskObject.movementPlaneNormal.__str__())
+    
+    def accept(self):
+        """Run when we press the OK button"""
+        if Debug:
+            FreeCAD.Console.PrintMessage("TaskPanelDapContainerClass-accept\n")
+
+        # Update all the stuff by asking for a re-compute
+        self.containerTaskObject.recompute()
+        FreeCADGui.getDocument(self.containerTaskObject.Document).resetEdit()
+    #  -------------------------------------------------------------------------
+    def getPlaneOfMotion_Callback(self):
+        # self.PlaneOfMotion = 
+        # First get the selected objects
+        selected_objects = FreeCADGui.Selection.getSelectionEx()
+        if len(selected_objects) != 1:
+            print('There are more than one selected object')
+            return
+
+        selected_object = selected_objects[0]
+        sub_objects = selected_object.SubObjects
+        if len(sub_objects) != 1:
+            print('There are more than one selected face, edge, vertex')
+            return
+
+        face = sub_objects[0]
+        if face.ShapeType != 'Face':
+            print('Please select a face')
+            return
+        
+        normal = face.normalAt(0, 0)
+        self.form.planeOfMotionName.setText(normal.__str__())
+        self.containerTaskObject.movementPlaneNormal = normal
+    #  -------------------------------------------------------------------------
+    def getStandardButtons(self):
+        """ Set which button will appear at the top of the TaskDialog [Called from FreeCAD]"""
+        if Debug:
+            FreeCAD.Console.PrintMessage("TaskPanelDapContainerClass-getStandardButtons\n")
+        return int(QtGui.QDialogButtonBox.Ok)
+    #  -------------------------------------------------------------------------
+    def dumps(self):
+        if Debug:
+            DT.Mess("TaskPanelDapSolverClass-dumps")
+        return None
+    #  -------------------------------------------------------------------------
+    def loads(self, state):
+        if Debug:
+            DT.Mess("TaskPanelDapSolverClass-loads")
         if state:
             self.Type = state
         return None

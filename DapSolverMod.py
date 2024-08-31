@@ -8,7 +8,7 @@ from pivy import coin
 import DapToolsMod as DT
 import DapMainMod
 
-Debug = False
+Debug = True
 
 planeOfMotion2 = []
 
@@ -232,34 +232,6 @@ class TaskPanelDapSolverClass:
         self.Accuracy = 5
         self.form.Accuracy.setValue(self.Accuracy)
         self.form.Accuracy.valueChanged.connect(self.accuracyChanged_Callback)
-
-        # Set the plane of motion
-        self.form.Accuracy.valueChanged.connect(self.accuracyChanged_Callback)
-        self.form.planeOfMotionBtn.clicked.connect(self.getPlaneOfMotion_Callback)
-        self.form.planeOfMotionName.setText(solverTaskObject.PlaneOfMotion.__str__())
-
-        # Display the plane of motion
-        from Solver.FreeCADFunctions import make_plane, quaternion_from_euler, calculate_rotation
-        import numpy as np
-        global planeOfMotion2
-
-        # Check if planeOfMotion2 has the necessary elements
-        if len(planeOfMotion2) >= 2:
-            trans = planeOfMotion2[0]
-            rot = planeOfMotion2[1]
-            print('Found existing trans, rot')
-        else:
-            trans, rot = make_plane()
-            planeOfMotion2 = [trans, rot]
-            print('Made new trans, rot')
-        
-        trans.translation.setValue(500, 0, 0)
-        ang = calculate_rotation(np.array([solverTaskObject.PlaneOfMotion.x, solverTaskObject.PlaneOfMotion.y, solverTaskObject.PlaneOfMotion.z]))
-        ang = quaternion_from_euler(ang[0], ang[1], ang[2])
-
-        print('Angle:', ang)
-        rot.rotation.setValue(ang[0], ang[1], ang[2], ang[3])
-        planeOfMotion2 = [trans, rot]
     #  -------------------------------------------------------------------------
     def accept(self):
         """Run when we press the OK button"""
@@ -349,29 +321,6 @@ class TaskPanelDapSolverClass:
         if Debug:
             DT.Mess("TaskPanelDapSolverClass-getStandardButtons")
         return int(QtGui.QDialogButtonBox.Ok)
-    #  -------------------------------------------------------------------------
-    def getPlaneOfMotion_Callback(self):
-        # self.PlaneOfMotion = 
-        # First get the selected objects
-        selected_objects = FreeCADGui.Selection.getSelectionEx()
-        if len(selected_objects) != 1:
-            print('There are more than one selected object')
-            return
-
-        selected_object = selected_objects[0]
-        sub_objects = selected_object.SubObjects
-        if len(sub_objects) != 1:
-            print('There are more than one selected face, edge, vertex')
-            return
-
-        face = sub_objects[0]
-        if face.ShapeType != 'Face':
-            print('Please select a face')
-            return
-        
-        normal = face.normalAt(0, 0)
-        self.form.planeOfMotionName.setText(normal.__str__())
-        self.solverTaskObject.PlaneOfMotion = normal
         
     #  -------------------------------------------------------------------------
     def dumps(self):

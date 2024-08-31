@@ -84,10 +84,15 @@ class DapWorkbench21C(Workbench):
 
     def Activated(self):
         """Called when the NikraDAP workbench is run"""
+        print("DapWorkbenchClass-Activate")
+        import SelectionObserver
+        self.observer = SelectionObserver.SelectionObserverClass()
+        FreeCADGui.Selection.addObserver(self.observer)
     #  -------------------------------------------------------------------------
 
     def Deactivated(self):
         """This function is executed each time the DAP workbench is stopped"""
+        print(self.observer)
     #  -------------------------------------------------------------------------
 
     def GetClassName(self):

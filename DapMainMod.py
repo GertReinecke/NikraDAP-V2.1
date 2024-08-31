@@ -8,7 +8,7 @@ import math
 import DapToolsMod as DT
 import DapFunctionMod
 
-Debug = False
+Debug = True
 
 
 #  -------------------------------------------------------------------------

@@ -29,7 +29,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>350</y>
+     <y>280</y>
      <width>131</width>
      <height>18</height>
     </rect>
@@ -42,7 +42,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>380</y>
+     <y>310</y>
      <width>205</width>
      <height>25</height>
     </rect>
@@ -55,7 +55,7 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>350</y>
+     <y>280</y>
      <width>85</width>
      <height>25</height>
     </rect>
@@ -173,7 +173,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>410</y>
+     <y>340</y>
      <width>205</width>
      <height>35</height>
     </rect>
@@ -289,7 +289,7 @@
    <property name="geometry">
     <rect>
      <x>200</x>
-     <y>230</y>
+     <y>160</y>
      <width>21</width>
      <height>31</height>
     </rect>
@@ -302,7 +302,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>240</y>
+     <y>170</y>
      <width>160</width>
      <height>20</height>
     </rect>
@@ -318,7 +318,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>320</y>
+     <y>250</y>
      <width>205</width>
      <height>25</height>
     </rect>
@@ -331,7 +331,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>300</y>
+     <y>230</y>
      <width>91</width>
      <height>18</height>
     </rect>
@@ -344,7 +344,7 @@
    <property name="geometry">
     <rect>
      <x>200</x>
-     <y>260</y>
+     <y>190</y>
      <width>20</width>
      <height>20</height>
     </rect>
@@ -357,45 +357,13 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>260</y>
+     <y>190</y>
      <width>160</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Output Animation Only&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="planeOfMotionBtn">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>170</y>
-     <width>205</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="text">
-    <string>Select Plane of Motion</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="planeOfMotionName">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>200</y>
-     <width>205</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="clearButtonEnabled">
-    <bool>false</bool>
    </property>
   </widget>
  </widget>
