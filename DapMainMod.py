@@ -1,4 +1,5 @@
 import FreeCAD
+import FreeCADGui
 
 import os
 import numpy as np
@@ -8,7 +9,7 @@ import math
 import DapToolsMod as DT
 import DapFunctionMod
 
-Debug = True
+Debug = False
 
 
 #  -------------------------------------------------------------------------
@@ -121,30 +122,31 @@ class DapMainC:
         self.initNumPyArrays(maxNumberPoints)
 
 #region Create the body and joint objects
-        print("DAP Bodies Creation")
+        #print("DAP Bodies Creation")
         for bodyIndex in range(self.numBodies):
             bodyObj = self.bodyObjList[bodyIndex] # This is a Part::PartFeature
-            print(f'Body{bodyIndex}', bodyObj)
+            #print(f'Body{bodyIndex}', bodyObj)
 
 #region
 
         # Transfer all the 3D stuff into the NumPy arrays while doing the projection onto the X-Y plane
-        print("Number of bodies:", self.numBodies)
+        #print("Number of bodies:", self.numBodies)
         for bodyIndex in range(self.numBodies):
+            print('*********************')
             bodyObj = self.bodyObjList[bodyIndex]
             # Bring the body Mass, CoG, MoI and Weight up-to-date
             # It was already calculated after the Materials definition
             # but do it again, just in case something has changed since
+            print(bodyObj.Label)
             DT.computeCoGAndMomentInertia(bodyObj)
             # All Mass and moment of inertia stuff
             self.MassNp[bodyIndex] = bodyObj.Mass
             self.momentInertiaNp[bodyIndex] = bodyObj.momentInertia
             
             plane_of_motion = self.solverObj.PlaneOfMotion
-            #plane_of_motion = None
             
             npVec = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.weightVector), plane_of_motion)
-            print("Weight Vector:", bodyObj.weightVector, npVec)
+            #print("Weight Vector:", bodyObj.weightVector, npVec)
             self.WeightNp[bodyIndex] = npVec
 
             # Change the local vectors to be relative to the CoG, rather than the body origin
@@ -158,31 +160,29 @@ class DapMainC:
             else:
                 npCoG = DT.CADVecToNumPyF(CoG, None)
             self.worldNp[bodyIndex, 0:2] = npCoG
-            print("World NP:", self.worldNp)
+            #print("World NP:", self.worldNp)
             self.worldRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npCoG.copy())
             # WorldDot
             npWorldDot = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.worldDot), plane_of_motion)
-            print("World dot:", bodyObj.worldDot, npWorldDot)
+            #print("World dot:", bodyObj.worldDot, npWorldDot)
             self.worldDotNp[bodyIndex, 0:2] = npWorldDot
             self.worldDotRotNp[bodyIndex, 0:2] = DT.Rot90NumPy(npWorldDot.copy())
             # WorldDotDot
             self.worldDotDotNp[bodyIndex, 0:2] = np.zeros((1, 2))
 
             # Transform the points from model Placement to World X-Y plane relative to the CoG
-            vectorsRelativeCoG = bodyObj.pointLocals.copy()
-                        
-            print("pointLocals", bodyObj.pointLocals)
+            vectorsRelativeCoG = bodyObj.pointLocals.copy()        
+            #print("Point Locals", bodyObj.pointLocals)
 
             for localIndex in range(len(vectorsRelativeCoG)):
                 
                 vectorsRelativeCoG[localIndex] = xyzToXYRotation.toMatrix(). \
                                                      multiply(bodyObj.world.toMatrix()). \
                                                     multVec(vectorsRelativeCoG[localIndex]) - CoG
-
+            #print("Before Plane", vectorsRelativeCoG)
             for point in range(len(vectorsRelativeCoG)):
-                vectorsRelativeCoG[point] = DT.CADVecToNumPyF(vectorsRelativeCoG[localIndex], plane_of_motion)
-
-            print("vectorsRelativeCoG", vectorsRelativeCoG)
+                vectorsRelativeCoG[point] = DT.CADVecToNumPyF(vectorsRelativeCoG[point], plane_of_motion)
+            #print("After Plane", vectorsRelativeCoG)
 
             # Take some trouble to make phi as nice an angle as possible
             # Because the user will maybe use it manually later and will appreciate more simplicity
@@ -194,7 +194,7 @@ class DapMainC:
             # The phiDot axis vector is by definition perpendicular to the movement plane,
             # so we don't have to do any rotating from the phiDot value set in bodyObj
             self.phiDotNp[bodyIndex] = bodyObj.phiDot
-            print("Phi Dot", bodyObj.phiDot)
+            #print("Phi Dot", bodyObj.phiDot)
 
             # We will now calculate the rotation matrix and use it to find the coordinates of the points
             self.RotMatPhiNp[bodyIndex] = DT.RotationMatrixNp(self.phiNp[bodyIndex])
@@ -204,10 +204,13 @@ class DapMainC:
                 # Point Local - vector from module body CoG to the point, in body LCS coordinates
                 # [This is what we needed phi for, to fix the orientation of the body]
                 npVec = DT.CADVecToNumPyF(vectorsRelativeCoG[pointIndex], None)
+                #print(f'NP Vector at {pointIndex}', npVec)
+                #print(f'NP Vector at {pointIndex}', vectorsRelativeCoG)
                 self.pointXiEtaNp[bodyIndex, pointIndex, 0:2] = npVec @ self.RotMatPhiNp[bodyIndex]
                 # Point Vector - vector from body CoG to the point in world coordinates
                 self.pointXYrelCoGNp[bodyIndex, pointIndex, 0:2] = npVec
                 self.pointXYrelCoGrotNp[bodyIndex][pointIndex] = DT.Rot90NumPy(npVec.copy())
+                #print('Calculating the Rot NP vector', pointIndex, self.pointXYrelCoGrotNp)
                 # Point Vector Dot
                 self.pointXYrelCoGdotNp[bodyIndex][pointIndex] = np.zeros((1, 2))
                 # Point World - coordinates of the point relative to the system origin - in world coordinates
@@ -509,8 +512,8 @@ class DapMainC:
         # Pack coordinates and velocities into the NumPy uArray
         uArray = np.zeros((self.numMovBodiesx3 * 2,), dtype=np.float64)
         index1 = 0
-        index2 = self.numMovBodiesx3
-        for bodyIndex in range(1, self.numBodies):
+        index2 = self.numMovBodiesx3 # 6
+        for bodyIndex in range(1, self.numBodies): # 3
             uArray[index1:index1 + 2] = self.worldNp[bodyIndex]
             uArray[index1 + 2] = self.phiNp[bodyIndex]
             uArray[index2:index2 + 2] = self.worldDotNp[bodyIndex]
@@ -560,15 +563,16 @@ class DapMainC:
         # ###################################################################################
 
         # Solve the equations: <analysis function> (<start time>, <end time>) <pos & vel array> <times at which to evaluate>
+        print("Start Solving")
         solution = solve_ivp(self.Analysis,
                              (0.0, self.simEnd),
                              uArray,
                              t_eval=self.Tspan,
                              #method='RK45',
-                             rtol=1e-12,
-                             atol=1e-16)
+                             rtol=self.relativeTolerance,
+                             atol=self.absoluteTolerance)
                              #atol=self.absoluteTolerance)
-
+        print("Completed Solving")
         # Output the positions/angles results file
         self.PosFILE = open(os.path.join(self.solverObj.Directory, "DapAnimation.csv"), 'w')
         Sol = solution.y.T
@@ -604,6 +608,9 @@ class DapMainC:
     def Analysis(self, tick, uArray):
         """The Analysis function which takes a
         uArray consisting of a world 3vector and a velocity 3vector"""
+
+        print('Tick:', tick)
+        FreeCADGui.updateGui()
 
         # Unpack uArray into world coordinate and world velocity sub-arrays
         index1 = 0
@@ -667,6 +674,11 @@ class DapMainC:
                 DT.Mess("rhs")
                 DT.Np1D(True, rhs)
             # Solve the JacMasJac augmented with the rhs
+
+            if tick == 0:
+                print('DMD', JacMasJac)
+                print('RHS', rhs)
+            
             solvedVector = np.linalg.solve(JacMasJac, rhs)
 
             # First half of solution are the acceleration values
@@ -841,22 +853,38 @@ class DapMainC:
 
     #  =========================================================================
     def GetJacobianF(self):
+        #print("################################################################")
         """Returns the Jacobian matrix numConstraints X (3 x numMovBodies)"""
         if Debug:
             DT.Mess("DapMainMod-Jacobian")
         Jacobian = np.zeros((self.numConstraints, self.numMovBodiesx3,))
         for jointObj in self.jointObjList:
+            #print('Joint OBJ', jointObj.JointType, jointObj.Label)
             # Call the applicable function which is pointed to by the Jacobian dictionary
             JacobianHead, JacobianTail = self.dictJacobianFunctions[jointObj.JointType](jointObj)
+            #print('JacobianHead', JacobianHead)
+            #print('JacobianTail', JacobianTail)
             # Fill in the values in the Jacobian
             if jointObj.body_I_Index != 0:
                 columnHeadStart = (jointObj.body_I_Index - 1) * 3
                 columnHeadEnd = jointObj.body_I_Index * 3
+
+                #print('I columnHeadStart', columnHeadStart)
+                #print('I columnHeadEnd', columnHeadEnd)
+
                 Jacobian[jointObj.rowStart: jointObj.rowEnd, columnHeadStart: columnHeadEnd] = JacobianHead
+                #print('I Jacobian', Jacobian)
+
             if jointObj.body_J_Index != 0:
                 columnTailStart = (jointObj.body_J_Index - 1) * 3
                 columnTailEnd = jointObj.body_J_Index * 3
+
+                #print('J columnTailStart', columnTailStart)
+                #print('J columnTailEnd', columnTailEnd)
+
                 Jacobian[jointObj.rowStart: jointObj.rowEnd, columnTailStart: columnTailEnd] = JacobianTail
+                #print('J Jacobian', Jacobian)
+        #print("################################################################")
         return Jacobian
 
     #  =========================================================================
@@ -1059,6 +1087,7 @@ class DapMainC:
         if jointObj.fixDof:
             gammaNp = np.array([gammaNp[0], gammaNp[1], 0.0])
 
+        #print('gammaNp', gammaNp)
         return gammaNp
 
     #  =========================================================================

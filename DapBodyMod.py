@@ -38,7 +38,7 @@ class CommandDapBodyClass:
         if Debug:
             DT.Mess("CommandDapBodyClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon3n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPBody.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapBodyAlias", "Add Body"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapBodyAlias", "Creates and defines a body for the DAP analysis."), }
 
@@ -169,7 +169,7 @@ class ViewProviderDapBodyClass:
         """Returns the full path to the body icon (Icon3n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapBodyClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon3n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPBody.png")
 
     #  -------------------------------------------------------------------------
     def attach(self, bodyViewObject):
@@ -251,7 +251,7 @@ class TaskPanelDapBodyClass:
         self.bodyTaskObject.Proxy = self
 
         # Set up the form used to create the dialog box
-        ui_path = path.join(path.dirname(__file__), "TaskPanelDapBodies.ui")
+        ui_path = path.join(path.dirname(__file__), "TaskPanels\\TaskPanelDapBodies.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Signal that we only allow non-moving(ground) body for the first body
@@ -266,7 +266,10 @@ class TaskPanelDapBodyClass:
 
         # Give the body a nice transparent blue colour
         self.bodyTaskObject.ViewObject.Transparency = 20
-        self.bodyTaskObject.ViewObject.ShapeColor = (0.5, 0.5, 1.0, 1.0)
+        self.bodyTaskObject.ViewObject.ShapeColor = (0.5, 0.7, 1.0, 1.0)
+        
+
+        
         FreeCADGui.Selection.addObserver(self.bodyTaskObject)
 
         # --------------------------------------------------------

@@ -15,11 +15,10 @@ class DapWorkbench21C(Workbench):
     #  -------------------------------------------------------------------------
     def __init__(self):
         """Called on startup of FreeCAD"""
-        print("DapWorkbenchClass-__init__")
         import DapToolsMod as DT
 
         # Set up the text for the DAP workbench option, the NikraDAP icon, and the tooltip
-        self.__class__.Icon = os.path.join(DT.getDapModulePath(), "Icons", "Icon1n.png")
+        self.__class__.Icon = os.path.join(DT.getDapModulePath(), "Icons", "DAPWorkbench.png")
         self.__class__.MenuText = "NikraDAP-2.1"
         self.__class__.ToolTip = "Planar multibody dynamics workbench based on Prof. Nikravesh's DAP solver"
 
@@ -28,7 +27,6 @@ class DapWorkbench21C(Workbench):
     def Initialize(self):
         """Called on the first selection of the DapWorkbench
         and couples the main NikraDAP functions to the FreeCAD interface"""
-        print("DapWorkbenchClass-Initialize")
 
         # Define which commands will be called with each command alias
         from DapContainerMod import CommandDapContainerClass
@@ -60,7 +58,6 @@ class DapWorkbench21C(Workbench):
         'recipient'=='View' when mouse is in the VIEW window
         'recipient'=='Tree' when mouse is in the TREE window
         We currently do no use either flag"""
-        #print("DapWorkbenchClass-ContextMenu\n")
 
         # Append the DAP commands to the existing context menu
         self.appendContextMenu("NikraDAP Commands", self.MakeCommandList())
@@ -84,7 +81,7 @@ class DapWorkbench21C(Workbench):
 
     def Activated(self):
         """Called when the NikraDAP workbench is run"""
-        print("DapWorkbenchClass-Activate")
+        # This is the function that gets run when an object is selected within FreeCAD
         import SelectionObserver
         self.observer = SelectionObserver.SelectionObserverClass()
         FreeCADGui.Selection.addObserver(self.observer)
@@ -92,7 +89,6 @@ class DapWorkbench21C(Workbench):
 
     def Deactivated(self):
         """This function is executed each time the DAP workbench is stopped"""
-        print(self.observer)
     #  -------------------------------------------------------------------------
 
     def GetClassName(self):

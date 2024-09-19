@@ -8,7 +8,7 @@ from pivy import coin
 import DapToolsMod as DT
 import DapMainMod
 
-Debug = True
+Debug = False
 
 planeOfMotion2 = []
 
@@ -35,7 +35,7 @@ class CommandDapSolverClass:
         if Debug:
             DT.Mess("CommandDapSolverClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon7n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPSolver.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("Dap_Solver_alias", "Run the analysis"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("Dap_Solver_alias", "Run the analysis."),
         }
@@ -102,7 +102,6 @@ class DapSolverClass:
         DT.addObjectProperty(solverObject, "DapResultsValid", False, "App::PropertyBool",       "", "")
         DT.addObjectProperty(solverObject, "BodyNames",       [],    "App::PropertyStringList", "", "")
         DT.addObjectProperty(solverObject, "BodyCoG",         [],    "App::PropertyVectorList", "", "")
-        DT.addObjectProperty(solverObject, "PlaneOfMotion",   (0, 0, 1),    "App::PropertyVector", "", "")
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -138,7 +137,7 @@ class ViewProviderDapSolverClass:
         """Returns the full path to the solver icon (Icon7n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapSolverClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon7n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPSolver.png")
     #  -------------------------------------------------------------------------
     def attach(self, solverViewObject):
         if Debug:
@@ -208,7 +207,7 @@ class TaskPanelDapSolverClass:
             solverTaskObject.Directory = getcwd()
 
         # Load the taskDialog form information
-        ui_path = path.join(path.dirname(__file__), "TaskPanelDapSolver.ui")
+        ui_path = path.join(path.dirname(__file__), "TaskPanels", "TaskPanelDapSolver.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Set up actions on the solver button and fileDirectory browser
@@ -239,6 +238,12 @@ class TaskPanelDapSolverClass:
         if Debug:
             DT.Mess("TaskPanelDapSolverClass-accept")
 
+        # Save the settings to the object
+        self.solverTaskObject.TimeLength = self.form.endTime.value()
+
+        # Recompute document to update view provider based on the shapes
+        self.solverTaskObject.recompute()
+
         # Close the dialog
         Document = FreeCADGui.getDocument(self.solverTaskObject.Document)
         Document.resetEdit()
@@ -266,45 +271,34 @@ class TaskPanelDapSolverClass:
     def solveButtonClicked_Callback(self):
         """Call the MainSolve() method in the DapMainC class"""
 
+        # Update the settings of the solver objects from the task panel
+        self.solverTaskObject.TimeLength = self.form.endTime.value()
+        self.solverTaskObject.DeltaTime = self.form.reportingTime.value()
+
         if Debug:
             DT.Mess("TaskPanelDapSolverClass-solveButtonClicked_Callback")
 
         # Change the solve button to red with 'Solving' on it
         self.form.solveButton.setDisabled(True)
         self.form.solveButton.setText("Solving")
-        # Do some arithmetic to allow the repaint to happen
-        # before the frame becomes unresponsive due to the big maths
-        self.form.solveButton.repaint()
-        self.form.solveButton.update()
-        t = 0.0
-        for f in range(1000000):
-            t += f/10.0
         self.form.solveButton.repaint()
         self.form.solveButton.update()
 
-        self.solverTaskObject.Directory = self.form.outputDirectory.text()
-        if self.form.outputAnimOnly.isChecked():
-            self.solverTaskObject.FileName = "-"
-        else:
-            self.solverTaskObject.FileName = self.form.outputFileName.text()
-
-        self.solverTaskObject.TimeLength = self.form.endTime.value()
-        self.solverTaskObject.DeltaTime = self.form.reportingTime.value()
-
+  
         # Instantiate the DapMainC class and run the solver
-        self.DapMainC_Instance = DapMainMod.DapMainC(self.solverTaskObject.TimeLength,
-                                                     self.solverTaskObject.DeltaTime,
-                                                     self.Accuracy,
-                                                     self.form.correctInitial.isChecked())
+        self.DapMainC_Instance = DapMainMod.DapMainC(
+                    self.solverTaskObject.TimeLength,
+                    self.solverTaskObject.DeltaTime,
+                    self.Accuracy,
+                    self.form.correctInitial.isChecked()
+                )
+        
         if self.DapMainC_Instance.initialised is True:
             self.DapMainC_Instance.MainSolve()
 
-        # Return the solve button to green with 'Solve' on it
         self.form.solveButton.setText("Solve")
         self.form.solveButton.setEnabled(True)
-        # We end here after the solving has been completed
-        # and will wait for the OK button to be clicked
-    #  -------------------------------------------------------------------------
+
     def getFolderDirectory_Callback(self):
         """Request the directory where the .csv result files will be written"""
         if Debug:

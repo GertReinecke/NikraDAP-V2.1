@@ -37,8 +37,8 @@ def Solver(solverBodies, solverJoints, file, limit=None):
     #############
     #############
 
-    T_eval = np.arange(0, 1.01, 0.01)
-    solution = solve_ivp(analysis, [0, 5], U.flatten(), t_eval=T_eval, method='RK45', rtol=1e-12, atol=1e-9,
+    T_eval = np.arange(0, 10.01, 0.01)
+    solution = solve_ivp(analysis, [0, 10], U.flatten(), t_eval=T_eval, method='RK45', rtol=1e-12, atol=1e-9,
                          args=(solverBodies, solverJoints, True))
 
     solution_df_name = []

@@ -9,7 +9,7 @@ from pivy import coin
 
 import DapToolsMod as DT
 
-Debug = True
+Debug = False
 # =============================================================================
 def makeDapJoint(name="DapJoint"):
     """Create an empty Dap Joint Object"""
@@ -46,7 +46,7 @@ class CommandDapJointClass:
         if Debug:
             DT.Mess("CommandDapJointClass-GetResourcesC")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon4n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPJoint.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapJointAlias", "Add Joint"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapJointAlias", "Creates and defines a joint for the DAP analysis."),
         }
@@ -184,7 +184,7 @@ class ViewProviderDapJointClass:
         """Returns the full path to the joint icon (Icon4n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapJointClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon4n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPJoint.png")
     #  -------------------------------------------------------------------------
     def attach(self, jointViewObject):
         if Debug:
@@ -256,7 +256,7 @@ class TaskPanelDapJointClass:
         self.pointLabelListSecondBody = []
 
         # Load up the Task panel dialog definition file
-        ui_path = path.join(path.dirname(__file__), "TaskPanelDapJoints.ui")
+        ui_path = path.join(path.dirname(__file__), "TaskPanels", "TaskPanelDapJoints.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Populate the body object dictionary with body {names : objects}

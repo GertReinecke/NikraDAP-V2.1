@@ -160,7 +160,7 @@ class TaskPanelDapAnimateClass:
         self.playBackPeriod = 100  # msec
 
         # Load the Dap Animate ui form
-        uiPath = path.join(path.dirname(__file__), "TaskPanelDapAnimate.ui")
+        uiPath = path.join(path.dirname(__file__), "TaskPanels", "TaskPanelDapAnimate.ui")
         self.form = FreeCADGui.PySideUic.loadUi(uiPath)
 
         # Define callback functions when changes are made in the dialog

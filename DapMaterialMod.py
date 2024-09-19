@@ -31,7 +31,7 @@ class CommandDapMaterialClass:
         if Debug:
             FreeCAD.Console.PrintMessage("CommandDapMaterialClass-GetResources\n")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon5n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPMaterial.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("Dap_Material_alias", "Add Material"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("Dap_Material_alias", "Define the material properties associated with each body part.")
         }
@@ -129,7 +129,7 @@ class ViewProviderDapMaterialClass:
         """Returns the full path to the material icon (Icon5n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapMaterialClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon5n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPMaterial.png")
     #  -------------------------------------------------------------------------
     def attach(self, materialViewObject):
         if Debug:
@@ -195,12 +195,27 @@ class TaskPanelDapMaterialClass:
 
         # Get the materials data from the materials library
         cardID2cardData, cardID2cardName, DummyDict = cardutils.import_materials()
-
+    
         # Set up a record for the default density value at the beginning of the density dictionary
         self.densityDict = {'Default': 1000.0}
 
         # Add all the cards to the densityDict except for specialised steels
         for materialID in sorted(cardID2cardData.keys()):
+            # First check if the file is in the standard folder for FreeCAD 1.0
+            fileType = materialID.replace('/', '\\')
+            fileType = fileType.split('\\')
+
+            # Find the last occurrence of the 'Mod' in path
+            loc = 0
+            for i in reversed(fileType):
+                loc = loc - 1
+                if i == 'Mod':
+                    break
+
+            #       FreeCAD 0.21.2                             FreeCAD 1.0 RC1
+            if not (fileType[loc + 2] == 'StandardMaterial' or fileType[loc + 4] == 'Standard'):
+                continue
+
             # If the density option is 'None' set the density to a very small but non-zero value
             if cardID2cardName[materialID] == "None":
                 self.densityDict[cardID2cardName[materialID]] = 0.000000001
@@ -210,10 +225,30 @@ class TaskPanelDapMaterialClass:
                 # Get the density string from the card, and filter out the non-numeric characters
                 # This is fancy python - don't alter at all if you don't understand it
                 # Python Syntax:  f(x) if condition else g(x) for x in sequence
-                densityStr = cardID2cardData[materialID]['Density'][0:-3]
-                density = ''.join(x for x in densityStr if x.isdigit() or x in ['.', '-', ','])
-                densityNoComma = ''.join(x if x.isdigit() or x in ['.', '-'] else '.' for x in density)
-                self.densityDict[cardID2cardName[materialID]] = float(str(densityNoComma))
+                import re
+                densityStr = cardID2cardData[materialID]['Density']
+
+                # Regular expression to match numeric values and units
+                match = re.search(r'([-+]?\d*[.,]?\d+(?:[eE][-+]?\d+)?)\s*([a-zA-Z/^\s\d]+)', densityStr)
+                if match:
+                    value = float(match.group(1))
+                    unit = match.group(2).strip()
+                    
+                    # Convert based on the unit
+                    if unit == 'kg/mm^3':
+                        converted_value = value * 1e9  # Convert kg/mm^3 to kg/m^3
+                    elif unit == 'kg/m^3':
+                        converted_value = value  # Already in kg/m^3
+                    else:
+                        print(f"Unknown unit: {unit}")
+                        converted_value = None
+                    
+                    if converted_value is not None:
+                        self.densityDict[cardID2cardName[materialID]] = converted_value
+                    else:
+                        print('Cannot convert density:', densityStr)
+                else:
+                    print('Cannot get density:', densityStr)
 
         # Last thing, add a custom density card at the end of the list
         self.densityDict['Custom'] = 1000
@@ -237,7 +272,7 @@ class TaskPanelDapMaterialClass:
                 self.modelMaterialsDensitiesList.append(1000.0)
 
         # Set up the task dialog
-        ui_path = path.join(path.dirname(__file__), "TaskPanelDapMaterials.ui")
+        ui_path = path.join(path.dirname(__file__), "TaskPanels\\TaskPanelDapMaterials.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Set up kg/m3 according to the material object value

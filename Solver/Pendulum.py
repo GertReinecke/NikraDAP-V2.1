@@ -5,8 +5,8 @@ import pandas as pd
 
 from scipy.integrate import solve_ivp
 
-from DAPClasses.Body import DAPBody
-from DAPClasses.Joint import DAPJoint
+from Body import DAPBody
+from Joint import DAPJoint
 
 #############
 #############

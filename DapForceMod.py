@@ -33,7 +33,7 @@ class CommandDapForceClass:
         if Debug:
             DT.Mess("CommandDapForceClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon6n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPForce.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("DapForceAlias", "Add Force"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("DapForceAlias", "Creates and defines a force for the DAP analysis"),
         }
@@ -147,7 +147,7 @@ class ViewProviderDapForceClass:
         """Returns the full path to the force icon (Icon6n.png)"""
         if Debug:
             DT.Mess("ViewProviderDapForceClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon6n.png")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPForce.png")
     #  -------------------------------------------------------------------------
     def attach(self, forceViewObject):
         if Debug:
@@ -224,7 +224,7 @@ class TaskPanelDapForceClass:
         self.pointLabelListTwoTwo = []
 
         # Load up the task panel layout definition
-        uiPath = path.join(path.dirname(__file__), "TaskPanelDapForces.ui")
+        uiPath = path.join(path.dirname(__file__), "TaskPanels", "TaskPanelDapForces.ui")
         self.form = FreeCADGui.PySideUic.loadUi(uiPath)
 
         # Populate the body object dictionary with body {names : objects}

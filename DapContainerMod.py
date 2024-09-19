@@ -13,7 +13,7 @@ from pivy import coin
 import DapToolsMod as DT
 import DapMainMod
 
-Debug = True
+Debug = False
 # =============================================================================
 def makeDapContainer(name="DapContainer"):
     """Create Dap Container FreeCAD group object"""
@@ -37,7 +37,7 @@ class CommandDapContainerClass:
         if Debug:
             DT.Mess("CommandDapContainerClass-GetResources")
         return {
-            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "Icon2n.png"),
+            "Pixmap": path.join(DT.getDapModulePath(), "Icons", "DAPContainer.png"),
             "MenuText": QtCore.QT_TRANSLATE_NOOP("Dap_Container_alias", "Add Container"),
             "ToolTip": QtCore.QT_TRANSLATE_NOOP("Dap_Container_alias", "Creates a container for the DAP analysis data."),
         }
@@ -123,19 +123,17 @@ class DapContainerClass:
         return None
 # =============================================================================
 class ViewProviderDapContainerClass:
-    """Handle the screen interface stuff for the materials dialog"""
-    if Debug:
-        FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-CLASS\n")
+    """Handle the screen interface stuff for the containers dialog"""
     #  -------------------------------------------------------------------------
     def __init__(self, containerViewObject):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-__init__\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-__init__\n")
         containerViewObject.Proxy = self
     #  -------------------------------------------------------------------------
     def doubleClicked(self, containerViewObject):
         """Open up the TaskPanel if it is not open"""
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-doubleClicked\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-doubleClicked\n")
         Document = FreeCADGui.getDocument(containerViewObject.Object.Document)
         if not Document.getInEdit():
             Document.setEdit(containerViewObject.Object.Name)
@@ -144,28 +142,28 @@ class ViewProviderDapContainerClass:
     def getIcon(self):
         """Returns the full path to the container icon (Icon5n.png)"""
         if Debug:
-            DT.Mess("ViewProviderDapMaterialClass-getIcon")
-        return path.join(DT.getDapModulePath(), "Icons", "Icon5n.png")
+            DT.Mess("ViewProviderDapContainerClass-getIcon")
+        return path.join(DT.getDapModulePath(), "Icons", "DAPContainer.png")
     #  -------------------------------------------------------------------------
     def attach(self, containerViewObject):
         if Debug:
-            DT.Mess("ViewProviderDapMaterialClass-attach")
+            DT.Mess("ViewProviderDapContainerClass-attach")
         self.containerObject = containerViewObject.Object
         containerViewObject.addDisplayMode(coin.SoGroup(), "Standard")
     #  -------------------------------------------------------------------------
     def getDisplayModes(self, containerObject):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDisplayModes\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-getDisplayModes\n")
         return []
     #  -------------------------------------------------------------------------
     def getDefaultDisplayMode(self):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-getDefaultDisplayMode\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-getDefaultDisplayMode\n")
         return "Flat Lines"
     #  -------------------------------------------------------------------------
     def setDisplayMode(self, mode):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-setDisplayMode\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-setDisplayMode\n")
         return mode
     #  -------------------------------------------------------------------------
     def updateData(self, obj, prop):
@@ -174,24 +172,24 @@ class ViewProviderDapContainerClass:
     def setEdit(self, containerViewObject, mode):
         """Edit the parameters by calling the task dialog"""
         if Debug:
-            DT.Mess("ViewProviderDapMaterialClass-setEdit")
+            DT.Mess("ViewProviderDapContainerlass-setEdit")
         FreeCADGui.Control.showDialog(TaskPanelDapContainerClass(self.containerObject))
         return True
     #  -------------------------------------------------------------------------
     def unsetEdit(self, containerViewObject, mode):
         """Close the task dialog when we have finished using it"""
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-unsetEdit\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-unsetEdit\n")
         FreeCADGui.Control.closeDialog()
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-dumps\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-dumps\n")
         return None
     #  -------------------------------------------------------------------------
     def loads(self, state):
         if Debug:
-            FreeCAD.Console.PrintMessage("ViewProviderDapMaterialClass-loads\n")
+            FreeCAD.Console.PrintMessage("ViewProviderDapContainerClass-loads\n")
         if state:
             self.Type = state
         return None
@@ -210,7 +208,7 @@ class TaskPanelDapContainerClass:
         containerTaskObject.Proxy = self
 
         # Load the taskDialog form information
-        ui_path = path.join(path.dirname(__file__), "TaskPanelDapContainer.ui")
+        ui_path = path.join(path.dirname(__file__), "TaskPanels\\TaskPanelDapContainer.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
         # Set the plane of motion
@@ -227,7 +225,6 @@ class TaskPanelDapContainerClass:
         FreeCADGui.getDocument(self.containerTaskObject.Document).resetEdit()
     #  -------------------------------------------------------------------------
     def getPlaneOfMotion_Callback(self):
-        # self.PlaneOfMotion = 
         # First get the selected objects
         selected_objects = FreeCADGui.Selection.getSelectionEx()
         if len(selected_objects) != 1:

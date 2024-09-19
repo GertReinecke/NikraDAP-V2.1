@@ -404,6 +404,7 @@ def computeCoGAndMomentInertia(bodyObj):
     # Run through all the solids in the assemblyObjectList
     for assemblyPartName in bodyObj.ass4SolidsNames:
         assemblyObj = bodyObj.Document.findObjects(Name="^" + assemblyPartName + "$")[0]
+        print('Assembly Object:', assemblyObj, "^" + assemblyPartName + "$")
         if Debug:
             Mess(str("assembly4 Part Name:  ")+str(assemblyPartName))
 
@@ -936,7 +937,7 @@ def Rot90NumPy(a):
 def CADVecToNumPyF(CADVec, Normal: None):
     
     if type(CADVec) == np.ndarray:
-        print('vec:', CADVec)
+        #print('vec:', CADVec)
         if len(CADVec) != 2:
             vec = np.array([CADVec[0], CADVec[1], CADVec[2]])
         else:
@@ -945,7 +946,6 @@ def CADVecToNumPyF(CADVec, Normal: None):
         vec = np.array([CADVec.x, CADVec.y, CADVec.z])
     
     if Normal != None:
-        print('Using the Normal Vector')
         normal = np.array([Normal.x, Normal.y, Normal.z])
         normal = normalize(normal)
 

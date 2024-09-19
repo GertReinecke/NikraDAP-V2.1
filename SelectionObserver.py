@@ -10,6 +10,7 @@ def exists(active: list, obj: str):
             return True, l
     return False, None
 
+
 class SelectionObserverClass:
     def __init__(self):
         self.counter = 1
@@ -18,34 +19,46 @@ class SelectionObserverClass:
 
     def addSelection(self, doc, obj, sub, pnt):
         # This method is called when an object is selected
-        print(f"Icons count: {len(self.ActiveIcons)}")
-        print(f"Object: {obj}")
+        #print(f"Icons count: {len(self.ActiveIcons)}")
+        #print(f"Object: {obj}")
         self.counter = self.counter + 1
         # Get the selected object to show its 
         body = App.getDocument(doc).getObject(obj)
         
+        pos = [0, 0, 0]
+        rot = [0, 0, 0, 1]
         icon = None
         if obj == 'DapContainer':
-            icon = InfoIcon.planeIcon(self.sceneGraph, obj, doc)
+            icon = InfoIcon.planeIcon(self.sceneGraph, obj, doc, pos, rot)
         elif (len(obj) > 7 and obj[:8] == 'DapJoint'):
-            icon = InfoIcon.rotationIcon(self.sceneGraph, obj, doc)
+            # This body is a DapJoint
+            bodyI = App.getDocument(doc).getObject(body.body_I_Name) # Name of body I
+            #bodyI = App.getDocument(doc).getObject(linkBody)
+
+            # This is the point index in bodyI
+            loc = body.point_I_i_Index
+            pos = bodyI.pointLocals[loc]
+            pos = [pos.x, pos.y, pos.z]
+            icon = InfoIcon.rotationIcon(self.sceneGraph, obj, doc, pos, rot)
         elif (len(obj) > 6 and obj[:7] == 'DapBody'):
-            icon = InfoIcon.velocityIcon(self.sceneGraph, obj, doc)
+            pos = body.centreOfGravity
+            pos = [pos.x, pos.y, pos.z]
+            icon = InfoIcon.velocityIcon(self.sceneGraph, obj, doc, pos, rot)
         
         if icon != None:
             self.ActiveIcons.append(icon)	
 
     def clearSelection(self, doc):
         # This method is called when the selection is cleared
-        print(f"Selection cleared {len(self.ActiveIcons)}")
+        #print(f"Selection cleared {len(self.ActiveIcons)}")
         for i in self.ActiveIcons:
             self.sceneGraph.removeChild(i.root)
             del i
         self.ActiveIcons.clear()
         
-    def removeSelection(self, doc, obj, sub):
+    #def removeSelection(self, doc, obj, sub):
         # This method is called when an object is deselected
-        print(f"Deselected object: {obj}")
+        #print(f"Deselected object: {obj}")
 
 #--------------------------------
 # Icons for the
@@ -58,7 +71,7 @@ class InfoIcon:
         self.document = None
         self.switch = None
 
-    def rotationIcon(sceneGraph, doc, obj):
+    def rotationIcon(sceneGraph, doc, obj, pos, rot):
         # Create a new icon object
         icon = InfoIcon()
         icon.document = doc
@@ -80,9 +93,9 @@ class InfoIcon:
 
         # Add the translation and rotation nodes
         rotationRootTrans = coin.SoTranslation()
-        rotationRootTrans.translation.setValue([0, 0, 0])
+        rotationRootTrans.translation.setValue(pos)
         rotationRootRotation = coin.SoRotation()
-        rotationRootRotation.rotation.setValue(0, 0, 0, 1)
+        rotationRootRotation.rotation.setValue(*rot)
             
         rotationRootAnnotation.addChild(rotationRootTrans)
         rotationRootAnnotation.addChild(rotationRootRotation)
@@ -184,7 +197,7 @@ class InfoIcon:
         return icon
     
 
-    def velocityIcon(sceneGraph, doc, obj):
+    def velocityIcon(sceneGraph, doc, obj, pos, rot):
         # Create a new icon object
         icon = InfoIcon()
         icon.document = doc
@@ -206,9 +219,9 @@ class InfoIcon:
 
         # Add the translation and rotation nodes
         velocityRootTrans = coin.SoTranslation()
-        velocityRootTrans.translation.setValue([0, 0, 0])
+        velocityRootTrans.translation.setValue(pos)
         velocityRootRotation = coin.SoRotation()
-        velocityRootRotation.rotation.setValue(0, 0, 0, 1)
+        velocityRootRotation.rotation.setValue(*rot)
             
         velocityRootAnnotation.addChild(velocityRootTrans)
         velocityRootAnnotation.addChild(velocityRootRotation)
@@ -292,7 +305,7 @@ class InfoIcon:
 
         return icon
     
-    def planeIcon(sceneGraph, doc, obj):
+    def planeIcon(sceneGraph, doc, obj, pos, rot):
         # Create a new icon object
         icon = InfoIcon()
         icon.document = doc
@@ -314,9 +327,9 @@ class InfoIcon:
 
         # Add the translation and rotation nodes
         planeRootTrans = coin.SoTranslation()
-        planeRootTrans.translation.setValue([0, 0, 0])
+        planeRootTrans.translation.setValue(pos)
         planeRootRotation = coin.SoRotation()
-        planeRootRotation.rotation.setValue(0, 0, 0, 1)
+        planeRootRotation.rotation.setValue(*rot)
 
         planeRootAnnotation.addChild(planeRootTrans)
         planeRootAnnotation.addChild(planeRootRotation)

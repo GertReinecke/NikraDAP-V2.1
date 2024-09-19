@@ -143,6 +143,8 @@ def analysis(t, u, solverBodies, solverJoints, integrate):
         M.append(body.inertia)
     M = np.diag(M)
 
+    print('M', M)
+
     rhs = np.empty((0, 1))
     D = np.empty((0, len(solverBodies) * 3))
 
@@ -246,10 +248,15 @@ def analysis(t, u, solverBodies, solverJoints, integrate):
     DMD = np.delete(DMD, [0, 1, 2], axis=1)
     rhs = np.delete(rhs, [0, 1, 2], axis=0)
 
+    print('DMD', DMD)
+    print('RHS', rhs)
+
     solution = np.linalg.solve(DMD, rhs)
 
     c_dd = np.vstack([np.zeros((3, 1)), solution[:len(solverBodies) * 3 - 3]])
     ud = np.vstack([c_d, c_dd])
+
+    quit()
 
     if integrate:
         return ud.flatten()
