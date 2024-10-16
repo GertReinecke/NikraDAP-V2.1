@@ -102,6 +102,7 @@ class DapSolverClass:
         DT.addObjectProperty(solverObject, "DapResultsValid", False, "App::PropertyBool",       "", "")
         DT.addObjectProperty(solverObject, "BodyNames",       [],    "App::PropertyStringList", "", "")
         DT.addObjectProperty(solverObject, "BodyCoG",         [],    "App::PropertyVectorList", "", "")
+        DT.addObjectProperty(solverObject, "Solution",        [],    "App::PropertyFloatList", "", "")
     #  -------------------------------------------------------------------------
     def dumps(self):
         if Debug:
@@ -284,7 +285,6 @@ class TaskPanelDapSolverClass:
         self.form.solveButton.repaint()
         self.form.solveButton.update()
 
-  
         # Instantiate the DapMainC class and run the solver
         self.DapMainC_Instance = DapMainMod.DapMainC(
                     self.solverTaskObject.TimeLength,

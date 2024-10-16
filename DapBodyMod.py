@@ -268,8 +268,6 @@ class TaskPanelDapBodyClass:
         self.bodyTaskObject.ViewObject.Transparency = 20
         self.bodyTaskObject.ViewObject.ShapeColor = (0.5, 0.7, 1.0, 1.0)
         
-
-        
         FreeCADGui.Selection.addObserver(self.bodyTaskObject)
 
         # --------------------------------------------------------

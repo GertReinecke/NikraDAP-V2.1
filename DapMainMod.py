@@ -121,13 +121,10 @@ class DapMainC:
         # Initialise the size of all the NumPy arrays and fill with zeros
         self.initNumPyArrays(maxNumberPoints)
 
-#region Create the body and joint objects
         #print("DAP Bodies Creation")
         for bodyIndex in range(self.numBodies):
             bodyObj = self.bodyObjList[bodyIndex] # This is a Part::PartFeature
             #print(f'Body{bodyIndex}', bodyObj)
-
-#region
 
         # Transfer all the 3D stuff into the NumPy arrays while doing the projection onto the X-Y plane
         #print("Number of bodies:", self.numBodies)
@@ -143,7 +140,10 @@ class DapMainC:
             self.MassNp[bodyIndex] = bodyObj.Mass
             self.momentInertiaNp[bodyIndex] = bodyObj.momentInertia
             
-            plane_of_motion = self.solverObj.PlaneOfMotion
+            try:
+                plane_of_motion = self.solverObj.PlaneOfMotion
+            except:
+                plane_of_motion = None
             
             npVec = DT.CADVecToNumPyF(xyzToXYRotation.toMatrix().multVec(bodyObj.weightVector), plane_of_motion)
             #print("Weight Vector:", bodyObj.weightVector, npVec)
@@ -437,24 +437,23 @@ class DapMainC:
 
         # Return with a flag to show we have reached the end of init error-free
         self.initialised = True
-
     #  -------------------------------------------------------------------------
     def MainSolve(self):
 
-        print("==================== Bodies =======================")
-        print(self.bodyObjList)
-        print("===================================================")
+        #print("==================== Bodies =======================")
+        #print(self.bodyObjList)
+        #print("===================================================")
 
-        print("==================== Joints =======================")
-        for joint in self.jointObjList:
-            print(joint.JointType)
-            print(joint.body_I_Index)
-            print(joint.body_J_Index)
-        print("===================================================")
+        #print("==================== Joints =======================")
+        #for joint in self.jointObjList:
+        #    print(joint.JointType)
+        #    print(joint.body_I_Index)
+        #    print(joint.body_J_Index)
+        #print("===================================================")
 
-        print("===================== Mass ========================")
-        print(self.massArrayNp)
-        print("===================================================")
+        #print("===================== Mass ========================")
+        #print(self.massArrayNp)
+        #print("===================================================")
 
         if self.numConstraints != 0 and self.correctInitial:
             # Correct for initial conditions consistency
@@ -520,7 +519,7 @@ class DapMainC:
             uArray[index2 + 2] = self.phiDotNp[bodyIndex]
             index1 += 3
             index2 += 3
-        if True:
+        if Debug:
             print("uArray:", uArray)
             DT.Np1D(True, uArray)
         # Set up the list of time intervals over which to integrate
@@ -597,6 +596,18 @@ class DapMainC:
         # Flag that the results are valid
         self.solverObj.DapResultsValid = True
 
+        #print('Type of Solution:', type(solution.t), type(solution.y.T))
+        #print(solution.y.T)
+        #self.solverObj.Solution = solution.y.T.tolist()
+        i = 0
+
+        for prop in self.solverObj.PropertiesList:
+        # Check if the property belongs to a specific subcategory
+            if self.solverObj.getGroupOfProperty(prop) == 'Solution':
+                self.solverObj.removeProperty(prop)
+
+        self.outputResultObject(solution.t, solution.y.T)
+
         if self.solverObj.FileName != "-":
             self.outputResults(solution.t, solution.y.T)
 
@@ -609,7 +620,7 @@ class DapMainC:
         """The Analysis function which takes a
         uArray consisting of a world 3vector and a velocity 3vector"""
 
-        print('Tick:', tick)
+        #print('Tick:', tick)
         FreeCADGui.updateGui()
 
         # Unpack uArray into world coordinate and world velocity sub-arrays
@@ -640,7 +651,7 @@ class DapMainC:
         accel = []
         if self.numConstraints == 0:
             for index in range(self.numMovBodiesx3):
-                accel.append = self.massInvArray[index] * self.forceArrayNp[index]
+                accel.append(self.massInvArray[index] * self.forceArrayNp[index])
         # We go through this if we have any constraints
         else:
             Jacobian = self.GetJacobianF()
@@ -657,7 +668,7 @@ class DapMainC:
             JacMasJac[0: self.numMovBodiesx3, 0: self.numMovBodiesx3] = np.diag(self.massArrayNp)
             JacMasJac[self.numMovBodiesx3:, 0: self.numMovBodiesx3] = Jacobian
             JacMasJac[0: self.numMovBodiesx3, self.numMovBodiesx3:] = -Jacobian.T
-            if Debug:
+            if True:
                 DT.Mess("Jacobian-MassDiagonal-JacobianT Array")
                 DT.Np2D(JacMasJac)
 
@@ -670,15 +681,16 @@ class DapMainC:
             rhs = np.zeros((numBodPlusConstr,), dtype=np.float64)
             rhs[0: self.numMovBodiesx3] = self.forceArrayNp
             rhs[self.numMovBodiesx3:] = rhsAccel
-            if Debug:
+            if True:
                 DT.Mess("rhs")
                 DT.Np1D(True, rhs)
             # Solve the JacMasJac augmented with the rhs
 
             if tick == 0:
-                print('DMD', JacMasJac)
-                print('RHS', rhs)
-            
+                """"""
+                #print('DMD', JacMasJac)
+                #print('RHS', rhs)
+            return
             solvedVector = np.linalg.solve(JacMasJac, rhs)
 
             # First half of solution are the acceleration values
@@ -1173,9 +1185,9 @@ class DapMainC:
         VerticalCounter = 0
         TickRange = [0]
         TickRange += range(numTicks)
-        print("===========================================================================")
-        print(TickRange[:10])
-        print("===========================================================================")
+        #print("===========================================================================")
+        #print(TickRange[:10])
+        #print("===========================================================================")
 
         file_path = 'D:\\Universiteit\\MSS 732\\Models\\Single Pendulum\\Normal Start Point\\solvedVector.txt'
 
@@ -1265,7 +1277,7 @@ class DapMainC:
 
                         ColumnCounter += 1
 
-                    print(self.Lambda[timeIndex])
+                    #print(self.Lambda[timeIndex])
                     DapResultsFILE.write(" ".join(map(str, self.Lambda[timeIndex])) + " ")
             # Compute kinetic and potential energies in Joules
             totKinEnergy = 0
@@ -1357,6 +1369,111 @@ class DapMainC:
         # Next timeIndex
 
         DapResultsFILE.close()
+
+    def outputResultObject(self, timeValues, uResults):
+        self.containerObj = FreeCAD.ActiveDocument.findObjects(Name="^DapContainer$")[0]
+        self.solverObj = FreeCAD.ActiveDocument.findObjects(Name="^DapSolver$")[0]
+        
+        import DapSolutionMod
+        solutionObject = DapSolutionMod.makeDapSolution()
+        self.containerObj.addObject(solutionObject)
+        DT.addObjectProperty(solutionObject, f"Time", np.array(timeValues).copy(), "App::PropertyFloatList")
+        
+        numTicks = len(timeValues)
+
+        TickRange = [0]
+        TickRange += range(numTicks)
+        #print(timeValues)
+
+        Position = []
+        PositionDot = []
+        PositionDotDot = []
+
+        Rotation = []
+        RotationDot = []
+        RotationDotDot = []
+
+        self.Lambda = []
+        for timeIndex in range(len(timeValues)):
+            tick = timeValues[timeIndex]
+            #print(tick, timeIndex, uResults[timeIndex])
+            ColumnCounter = 0
+            potEnergy = 0
+
+            # Do the analysis on the stored uResults
+            #print('u', uResults[timeIndex])
+            self.Analysis(tick, uResults[timeIndex])
+
+            Position.append(self.worldNp.copy())
+            PositionDot.append(self.worldDotNp.copy())
+            PositionDotDot.append(self.worldDotDotNp.copy())
+
+            Rotation.append(self.phiNp.copy())
+            RotationDot.append(self.phiDotNp.copy())
+            RotationDotDot.append(self.phiDotDotNp.copy())
+
+        #first_values = [arr[0, 0] for arr in Position]
+        #print(first_values)
+        #Position = np.array(Position)
+        #PositionDot = np.array(PositionDot)
+        #PositionDotDot = np.array(PositionDotDot)
+        #Rotation = np.array(Rotation)
+        #RotationDot = np.array(RotationDot)
+        #RotationDotDot = np.array(RotationDotDot)
+        Lambda = self.Lambda
+
+        #print('Position', Position.shape)
+        #print('PositionDot', PositionDot.shape)
+        #print('PositionDotDot', PositionDotDot.shape)
+        #print('Rotation', Rotation.shape)
+        #print('RotationDot', RotationDot.shape)
+        #print('RotationDotDot', RotationDotDot.shape)
+        #print('Lambda', Lambda.shape)
+        
+        print(self.numBodies)
+        for bodyIndex in range(self.numBodies):
+            label = self.bodyObjList[bodyIndex].Label
+            values = [arr[bodyIndex, 0] for arr in Position]
+            DT.addObjectProperty(solutionObject, f"{label}_X", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex, 1] for arr in Position]
+            DT.addObjectProperty(solutionObject, f"{label}_Y", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex, 0] for arr in PositionDot]
+            DT.addObjectProperty(solutionObject, f"{label}_dX", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex, 1] for arr in PositionDot]
+            DT.addObjectProperty(solutionObject, f"{label}_dY", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex, 0] for arr in PositionDotDot]
+            DT.addObjectProperty(solutionObject, f"{label}_ddX", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex, 1] for arr in PositionDotDot]
+            DT.addObjectProperty(solutionObject, f"{label}_ddY", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex] for arr in Rotation]
+            DT.addObjectProperty(solutionObject, f"{label}_PHI", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex] for arr in RotationDot]
+            DT.addObjectProperty(solutionObject, f"{label}_dPHI", values, "App::PropertyFloatList")
+            values = [arr[bodyIndex] for arr in RotationDotDot]
+            DT.addObjectProperty(solutionObject, f"{label}_ddPHI", values, "App::PropertyFloatList")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     #  -------------------------------------------------------------------------
     def makeForceArray(self):
