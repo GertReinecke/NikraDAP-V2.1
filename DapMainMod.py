@@ -668,7 +668,7 @@ class DapMainC:
             JacMasJac[0: self.numMovBodiesx3, 0: self.numMovBodiesx3] = np.diag(self.massArrayNp)
             JacMasJac[self.numMovBodiesx3:, 0: self.numMovBodiesx3] = Jacobian
             JacMasJac[0: self.numMovBodiesx3, self.numMovBodiesx3:] = -Jacobian.T
-            if True:
+            if Debug:
                 DT.Mess("Jacobian-MassDiagonal-JacobianT Array")
                 DT.Np2D(JacMasJac)
 
@@ -681,16 +681,11 @@ class DapMainC:
             rhs = np.zeros((numBodPlusConstr,), dtype=np.float64)
             rhs[0: self.numMovBodiesx3] = self.forceArrayNp
             rhs[self.numMovBodiesx3:] = rhsAccel
-            if True:
+            if Debug:
                 DT.Mess("rhs")
                 DT.Np1D(True, rhs)
             # Solve the JacMasJac augmented with the rhs
 
-            if tick == 0:
-                """"""
-                #print('DMD', JacMasJac)
-                #print('RHS', rhs)
-            return
             solvedVector = np.linalg.solve(JacMasJac, rhs)
 
             # First half of solution are the acceleration values
@@ -1377,7 +1372,7 @@ class DapMainC:
         import DapSolutionMod
         solutionObject = DapSolutionMod.makeDapSolution()
         self.containerObj.addObject(solutionObject)
-        DT.addObjectProperty(solutionObject, f"Time", np.array(timeValues).copy(), "App::PropertyFloatList")
+        DT.addObjectProperty(solutionObject, f"Time", timeValues.tolist(), "App::PropertyFloatList", "Data")
         
         numTicks = len(timeValues)
 
@@ -1434,23 +1429,23 @@ class DapMainC:
         for bodyIndex in range(self.numBodies):
             label = self.bodyObjList[bodyIndex].Label
             values = [arr[bodyIndex, 0] for arr in Position]
-            DT.addObjectProperty(solutionObject, f"{label}_X", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_X", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex, 1] for arr in Position]
-            DT.addObjectProperty(solutionObject, f"{label}_Y", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_Y", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex, 0] for arr in PositionDot]
-            DT.addObjectProperty(solutionObject, f"{label}_dX", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_dX", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex, 1] for arr in PositionDot]
-            DT.addObjectProperty(solutionObject, f"{label}_dY", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_dY", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex, 0] for arr in PositionDotDot]
-            DT.addObjectProperty(solutionObject, f"{label}_ddX", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_ddX", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex, 1] for arr in PositionDotDot]
-            DT.addObjectProperty(solutionObject, f"{label}_ddY", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_ddY", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex] for arr in Rotation]
-            DT.addObjectProperty(solutionObject, f"{label}_PHI", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_PHI", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex] for arr in RotationDot]
-            DT.addObjectProperty(solutionObject, f"{label}_dPHI", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_dPHI", values, "App::PropertyFloatList", "Data")
             values = [arr[bodyIndex] for arr in RotationDotDot]
-            DT.addObjectProperty(solutionObject, f"{label}_ddPHI", values, "App::PropertyFloatList")
+            DT.addObjectProperty(solutionObject, f"{label}_ddPHI", values, "App::PropertyFloatList", "Data")
 
 
 

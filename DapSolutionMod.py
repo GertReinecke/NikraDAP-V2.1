@@ -132,125 +132,113 @@ class ViewProviderDapSolutionClass:
             self.Type = state
         return None
 # =============================================================================
+from FreeCAD.Plot import Plot
+
 class TaskPanelDapSolutionClass:
     """Taskpanel for Executing DAP Solver User Interface"""
     if Debug:
         DT.Mess("TaskPanelDapSolutionClass-CLASS")
     #  -------------------------------------------------------------------------
-    def __init__(self, solverTaskObject):
+    def __init__(self, solutionTaskObject):
         """Run on first instantiation of a TaskPanelDapSolution class"""
-        if Debug:
-            DT.Mess("TaskPanelDapSolutionClass-__init__")
-
-        self.solverTaskObject = solverTaskObject
-        solverTaskObject.Proxy = self
-
-        # Get the directory name to store results in
-        if solverTaskObject.Directory == "":
-            solverTaskObject.Directory = getcwd()
-
+        self.solutionTaskObject = solutionTaskObject
+        solutionTaskObject.Proxy = self
         # Load the taskDialog form information
         ui_path = path.join(path.dirname(__file__), "TaskPanels", "TaskPanelDapSolution.ui")
         self.form = FreeCADGui.PySideUic.loadUi(ui_path)
 
-        # Set up actions on the solver button and fileDirectory browser
-        self.form.solveButton.clicked.connect(self.solveButtonClicked_Callback)
-        self.form.browseFileDirectory.clicked.connect(self.getFolderDirectory_Callback)
+        # Polulate the combo box with the list of properties, for the x axis
+        data_properties = [prop for prop in solutionTaskObject.PropertiesList if solutionTaskObject.getGroupOfProperty(prop) == "Data"]
+        self.form.cmbXAxis.addItems(data_properties)
+        if "Time" in data_properties:
+            time_index = data_properties.index("Time")
+            self.form.cmbXAxis.setCurrentIndex(time_index)
 
-        # Set the time in the form
-        self.form.endTime.setValue(solverTaskObject.TimeLength)
-        self.form.reportingTime.setValue(solverTaskObject.DeltaTime)
+        # Populate the Y-axis QListWidget with checkable items
+        for prop in data_properties:
+            item = QtGui.QListWidgetItem(prop)
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+            item.setCheckState(QtCore.Qt.Unchecked)  # Set the initial state to unchecked
+            self.form.lwYAxis.addItem(item)
 
-        # Set the file name and directory
-        self.form.outputDirectory.setText(solverTaskObject.Directory)
-        self.form.outputFileName.setText(solverTaskObject.FileName)
+        # Create a plot figure
+        Plot.figure('DAPSolution Plot')
+        
+        self.form.cmbXAxis.currentIndexChanged.connect(self.graphChange_Callback)
+        self.form.lwYAxis.itemChanged.connect(self.graphChange_Callback)
 
-        # Grey out the output data check boxes
-        self.form.outputAnimOnly.toggled.connect(self.outputAnimOnlyCheckboxChanged_Callback)
-        self.form.outputAnimOnly.setChecked(False)
-        self.form.outputAnimOnly.setChecked(True)
+        self.form.chXAuto.stateChanged.connect(self.graphChange_Callback)
+        self.form.chYAuto.stateChanged.connect(self.graphChange_Callback)
 
-        # Set the accuracy in the form
-        self.Accuracy = 5
-        self.form.Accuracy.setValue(self.Accuracy)
-        self.form.Accuracy.valueChanged.connect(self.accuracyChanged_Callback)
+        self.form.edtXMin.textChanged.connect(self.graphChange_Callback)
+        self.form.edtXMax.textChanged.connect(self.graphChange_Callback)
+        self.form.edtYMin.textChanged.connect(self.graphChange_Callback)
+        self.form.edtYMax.textChanged.connect(self.graphChange_Callback)
     #  -------------------------------------------------------------------------
     def accept(self):
         """Run when we press the OK button"""
+        # Close the plotting
+        Plot.closePlot()
 
-        if Debug:
-            DT.Mess("TaskPanelDapSolutionClass-accept")
-
-        # Save the settings to the object
-        self.solverTaskObject.TimeLength = self.form.endTime.value()
-
-        # Recompute document to update view provider based on the shapes
-        self.solverTaskObject.recompute()
-
-        # Close the dialog
-        Document = FreeCADGui.getDocument(self.solverTaskObject.Document)
+        Document = FreeCADGui.getDocument(self.solutionTaskObject.Document)
         Document.resetEdit()
 
-        #  Recompute document to update view provider based on the shapes
-        solverDocName = str(self.solverTaskObject.Document.Name)
-        FreeCAD.getDocument(solverDocName).recompute()
-    #  -------------------------------------------------------------------------
-    def outputAnimOnlyCheckboxChanged_Callback(self):
-        if self.form.outputAnimOnly.isChecked():
-            self.form.outputFileLabel.setDisabled(True)
-            self.form.outputFileName.setDisabled(True)
-            self.form.browseFileDirectory.setDisabled(True)
-            self.form.outputDirectoryLabel.setDisabled(True)
-            self.form.outputDirectory.setDisabled(True)
-        else:
-            self.form.outputFileLabel.setEnabled(True)
-            self.form.outputFileName.setEnabled(True)
-            self.form.browseFileDirectory.setEnabled(True)
-            self.form.outputDirectoryLabel.setEnabled(True)
-            self.form.outputDirectory.setEnabled(True)
-            self.Accuracy = 9
-            self.form.Accuracy.setValue(self.Accuracy)
-    #  -------------------------------------------------------------------------
-    def solveButtonClicked_Callback(self):
-        """Call the MainSolve() method in the DapMainC class"""
-
-        # Update the settings of the solver objects from the task panel
-        self.solverTaskObject.TimeLength = self.form.endTime.value()
-        self.solverTaskObject.DeltaTime = self.form.reportingTime.value()
-
-        if Debug:
-            DT.Mess("TaskPanelDapSolutionClass-solveButtonClicked_Callback")
-
-        # Change the solve button to red with 'Solving' on it
-        self.form.solveButton.setDisabled(True)
-        self.form.solveButton.setText("Solving")
-        self.form.solveButton.repaint()
-        self.form.solveButton.update()
-
-        # Instantiate the DapMainC class and run the solver
-        self.DapMainC_Instance = DapMainMod.DapMainC(
-                    self.solverTaskObject.TimeLength,
-                    self.solverTaskObject.DeltaTime,
-                    self.Accuracy,
-                    self.form.correctInitial.isChecked()
-                )
-        
-        if self.DapMainC_Instance.initialised is True:
-            self.DapMainC_Instance.MainSolve()
-
-        self.form.solveButton.setText("Solve")
-        self.form.solveButton.setEnabled(True)
-
-    def getFolderDirectory_Callback(self):
-        """Request the directory where the .csv result files will be written"""
-        if Debug:
-            DT.Mess("TaskPanelDapSolutionClass-getFolderDirectory_Callback")
-        self.solverTaskObject.Directory = QtGui.QFileDialog.getExistingDirectory()
-        self.form.outputDirectory.setText(self.solverTaskObject.Directory)
-    #  -------------------------------------------------------------------------
-    def accuracyChanged_Callback(self):
+    def graphChange_Callback(self):
         """Change the accuracy setting when slider has been adjusted"""
-        self.Accuracy = self.form.Accuracy.value()
+        plt = Plot.getPlot()
+
+        if not plt: # Ensure there is a plot object
+            Plot.figure('DAPSolution Plot')
+            plt = Plot.getPlot()
+
+            if not plt:
+                return
+
+        # Get the data
+        x_label = self.form.cmbXAxis.currentText()
+        x_values = self.solutionTaskObject.getPropertyByName(x_label)
+
+        y_values = []
+        for i in range(self.form.lwYAxis.count()):
+            item = self.form.lwYAxis.item(i)
+            if item.checkState() == QtCore.Qt.Checked:
+                y_values.append(item.text())
+
+        #plt.title("Title")
+        ax = plt.axes
+        ax.cla()
+        plt.update()
+
+        ax.set_xlabel(x_label)
+        
+        y_label = ""
+        for y in y_values:
+            y_values = self.solutionTaskObject.getPropertyByName(y)
+            ax.plot(x_values, y_values, label=y)
+            y_label = f"{y_label}{y} "
+        ax.set_ylabel(y_label)
+        
+        # Get the handles and labels for the legend
+        handles, labels = ax.get_legend_handles_labels()
+        # Only add a legend if there are labels
+        if labels:
+            ax.legend()
+
+        # Adjust the axis limits
+        if self.form.chXAuto.checkState() == False:
+            try:
+                ax.set_xlim(float(self.form.edtXMin.text()), float(self.form.edtXMax.text()))
+            except:
+                pass
+
+        if self.form.chYAuto.checkState() == False:
+            try:
+                ax.set_ylim(float(self.form.edtYMin.text()), float(self.form.edtYMax.text()))
+            except:
+                pass
+
+        plt.update()
+
     #  -------------------------------------------------------------------------
     def getStandardButtons(self):
         """ Set which button will appear at the top of the TaskDialog [Called from FreeCAD]"""
